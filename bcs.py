@@ -14,6 +14,8 @@ vs = VideoStream(usePiCamera=onPi).start()
 MODEL_FILE = "model.mdl"
 path = 'data'
 
+a = 0
+
 def to_gray(img):
 	gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 	gray = cv2.equalizeHist(gray)
@@ -29,16 +31,19 @@ def load_images(path):
 			subjectPath = os.path.join(dirname, subdirname)
 			print str(c) + " - " + subdirname
 			for filename in os.listdir(subjectPath):
-				try:
-					img = cv2.imread(os.path.join(subjectPath, filename), cv2.IMREAD_GRAYSCALE)
-					img = cv2.resize(img, (100,100))
-					images.append(np.asarray(img, dtype=np.uint8))
-					labels.append(c)
-				except IOError, (errno, strerror):
-					print "IOError({0}): {1}".format(errno, strerror)
-				except:
-					print "Unexpected error:" , sys.exc_info()[0]
-					raise
+				file = os.path.join(subjectPath, filename)
+				filename, file_extension = os.path.splitext(file)
+				if file_extension == '.jpg':
+					print(file)
+					try:
+						img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
+						img = cv2.resize(img, (100,100))
+						images.append(np.asarray(img, dtype=np.uint8))
+						labels.append(c)
+					except IOError, (errno, strerror):
+						print "IOError({0}): {1}".format(errno, strerror)
+					except:
+						print "Unexpected error"
 			c += 1
 		return images, np.array(labels)
 
@@ -81,15 +86,18 @@ def get_faces(img, cascade):
 	
 
 def save_faces_img(prefix,img, cascade):
+	global a
 	faces = get_faces(img, cascade)
 	c = 0
 	for face in faces:
 		x, y, h, w = [result for result in face]
-		cv2.imwrite(prefix+str(c)+".jpg",img[y:y+h,x:x+w])
+		cv2.imwrite(prefix+str(a)+str(c)+".jpg",img[y:y+h,x:x+w])
 		c += 1
+	a = a + 1
 
 def load_model(file=None):
-	model = cv2.createFisherFaceRecognizer()
+	#model = cv2.createFisherFaceRecognizer()
+	model = cv2.createLBPHFaceRecognizer()
 	if file != None:
 		model.load(MODEL_FILE)
 		print "Trained model loaded."
@@ -114,6 +122,14 @@ def recognize(img, cascade, model):
 			print recognized
 
 
+def draw_str(dst, (x, y), s):
+	fontSize = 2.0
+	textSize, baseline = cv2.getTextSize(s, cv2.FONT_HERSHEY_DUPLEX, fontSize, thickness = 2) 
+	x = x - textSize[0]/2
+	y = y - textSize[1]
+	cv2.putText(dst, s, (x+1, y+1), cv2.FONT_HERSHEY_DUPLEX, fontSize, (0, 0, 0), thickness = 2, lineType=cv2.CV_AA)
+	cv2.putText(dst, s, (x, y), cv2.FONT_HERSHEY_DUPLEX, fontSize, (255, 255, 255), lineType=cv2.CV_AA)
+
 faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
 #save_faces(path, faceCascade)
@@ -129,8 +145,9 @@ while True:
 	# grab the frame from the threaded video stream and resize it
 	# to have a maximum width of 400 pixels
 	frame = vs.read()
-	frame = imutils.resize(frame, width=400)
-	frame = to_gray(frame)
+	frame = cv2.flip(frame,1)
+	frame = imutils.resize(frame, width=800)
+	draw_str(frame, (400,frame.shape[0]), "Smile")
 
 	
 	# draw the timestamp on the frame
@@ -146,8 +163,10 @@ while True:
 	if key == ord("q"):
 		break
 	elif key == ord("d"):
+		frame = to_gray(frame)
 		save_faces_img("face", frame, faceCascade)
 	elif key == ord("r"):
+		frame = to_gray(frame)
 		recognize(frame, faceCascade, model)
 
 	time.sleep(0.04)
