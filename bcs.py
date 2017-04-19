@@ -11,6 +11,12 @@ vs = VideoStream(usePiCamera=onPi).start()
 
 #time.sleep(2.0)
 
+people = {}
+
+videoWidth = 800
+recordVideo = 0
+videoText = ""
+
 MODEL_FILE = "model.mdl"
 path = 'data'
 
@@ -22,14 +28,14 @@ def to_gray(img):
 	return gray
 
 def load_images(path):
+	global people
 	images, labels = [], []
 	c = 0
-	print "test " + path
 	for dirname, dirnames, filenames in os.walk(path):
-		print "test"
 		for subdirname in dirnames:
 			subjectPath = os.path.join(dirname, subdirname)
 			print str(c) + " - " + subdirname
+			people[c] = subdirname
 			for filename in os.listdir(subjectPath):
 				file = os.path.join(subjectPath, filename)
 				filename, file_extension = os.path.splitext(file)
@@ -45,6 +51,7 @@ def load_images(path):
 					except:
 						print "Unexpected error"
 			c += 1
+		print(people)
 		return images, np.array(labels)
 
 def detect(img, cascade):
@@ -96,19 +103,18 @@ def save_faces_img(prefix,img, cascade):
 	a = a + 1
 
 def load_model(file=None):
+	images, labels = load_images(path)
 	#model = cv2.createFisherFaceRecognizer()
 	model = cv2.createLBPHFaceRecognizer()
 	if file != None:
-		model.load(MODEL_FILE)
+		model.load(file)
 		print "Trained model loaded."
 	return model
 
 def train():
-	images, labels = load_images(path)
 	model = load_model()
 	model.train(images,labels)
 	model.save(MODEL_FILE)
-	print labels
 	return model
 
 def recognize(img, cascade, model):
@@ -119,7 +125,8 @@ def recognize(img, cascade, model):
 			x, y, h, w = [result for result in face]
 			resized = cv2.resize(img[y:y+h,x:x+w], (100,100))
 			recognized = model.predict(resized)
-			print recognized
+			return recognized
+	return None, None
 
 
 def draw_str(dst, (x, y), s):
@@ -134,10 +141,13 @@ faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
 #save_faces(path, faceCascade)
 
-model = train()
+#model = train()
+model = load_model(MODEL_FILE)
+
+fourcc = cv2.cv.CV_FOURCC(*'MP4V')
 
 
-
+video = None
 
 
 
@@ -146,27 +156,56 @@ while True:
 	# to have a maximum width of 400 pixels
 	frame = vs.read()
 	frame = cv2.flip(frame,1)
-	frame = imutils.resize(frame, width=800)
-	draw_str(frame, (400,frame.shape[0]), "Smile")
+	frame = imutils.resize(frame, width=videoWidth)
 
+	if not videoText == "":
+		draw_str(frame, (videoWidth/2,frame.shape[0]), videoText)
+
+	#print(frame.shape)
+
+	if recordVideo > 0:
+		video.write(frame)
 	
-	# draw the timestamp on the frame
-	#timestamp = datetime.datetime.now()
-	#ts = timestamp.strftime("%A %d %B %Y %I:%M:%S%p")
-	#cv2.putText(frame, ts, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
 
 	# show the frame
-	cv2.imshow("Frame", frame)
+	cv2.imshow("Hoosthere", frame)
 	key = cv2.waitKey(1) & 0xFF
 
+
+
 	# if the `q` key was pressed, break from the loop
-	if key == ord("q"):
+	if key == ord("q") or key == "q":
 		break
 	elif key == ord("d"):
 		frame = to_gray(frame)
 		save_faces_img("face", frame, faceCascade)
-	elif key == ord("r"):
+	elif key == ord("r") or key == "r":
+		key = "q"
+		recordVideo = 39
+		
+		try:
+			os.remove('output.mp4')
+		except OSError:
+			pass
+
+		video = cv2.VideoWriter('output.mp4', fourcc, 13.0, (videoWidth,450))
+
 		frame = to_gray(frame)
-		recognize(frame, faceCascade, model)
+		label, confidence = recognize(frame, faceCascade, model)
+
+
+		if not label == None:
+			videoText = people[label]
+		else:
+			videoText = "Not Found"
+
+		print(videoText)
+
+	if recordVideo == 1:
+		video.release()
+		video = None
+
+	if recordVideo > 0:
+		recordVideo = recordVideo - 1
 
 	time.sleep(0.04)
