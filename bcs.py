@@ -112,6 +112,7 @@ def load_model(file=None):
 	return model
 
 def train():
+	images, labels = load_images(path)
 	model = load_model()
 	model.train(images,labels)
 	model.save(MODEL_FILE)
@@ -141,8 +142,8 @@ faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
 #save_faces(path, faceCascade)
 
-#model = train()
-model = load_model(MODEL_FILE)
+model = train()
+#model = load_model(MODEL_FILE)
 
 fourcc = cv2.cv.CV_FOURCC(*'MP4V')
 
