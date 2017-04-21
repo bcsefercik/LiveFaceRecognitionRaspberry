@@ -13,7 +13,7 @@ vs = VideoStream(usePiCamera=onPi).start()
 
 people = {}
 
-videoWidth = 800
+videoWidth = 1200
 recordVideo = 0
 videoText = ""
 
@@ -109,14 +109,13 @@ def load_model(file=None):
 	if file != None:
 		model.load(file)
 		print "Trained model loaded."
+	else:	
+		model.train(images,labels)
+		model.save(MODEL_FILE)
 	return model
 
 def train():
-	images, labels = load_images(path)
-	model = load_model()
-	model.train(images,labels)
-	model.save(MODEL_FILE)
-	return model
+	return load_model()
 
 def recognize(img, cascade, model):
 	faces = get_faces(img, cascade)
@@ -142,8 +141,8 @@ faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
 #save_faces(path, faceCascade)
 
-model = train()
-#model = load_model(MODEL_FILE)
+#model = train()
+model = load_model(MODEL_FILE)
 
 fourcc = cv2.cv.CV_FOURCC(*'MP4V')
 
