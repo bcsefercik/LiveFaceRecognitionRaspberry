@@ -141,8 +141,8 @@ faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
 #save_faces(path, faceCascade)
 
-#model = train()
-model = load_model(MODEL_FILE)
+model = train()
+#model = load_model(MODEL_FILE)
 
 fourcc = cv2.cv.CV_FOURCC(*'MP4V')
 
