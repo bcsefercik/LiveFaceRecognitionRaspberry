@@ -4,7 +4,7 @@ import threading
 import imutils
 
 class MainView:
-	def __init__(self, vs, width=320, height=480):
+	def __init__(self, vs, width=320, height=460):
 		self.vs = vs
 
 		self.frame = None
@@ -18,7 +18,7 @@ class MainView:
 		self.button = tki.Button(self.root, text="Ring the Bell!", command=self.ring)
 		self.button.pack(side="bottom", fill="both", expand="yes", padx=10, pady=10)
 
-		self.stopEvent = threading.Event()
+		self.stopVideoLoop = threading.Event()
 		self.thread = threading.Thread(target=self.videoLoop, args=())
 		self.thread.start()
 
@@ -28,7 +28,7 @@ class MainView:
 	def videoLoop(self):
 		try:
 			a = 0
-			while True:
+			while not self.stopVideoLoop.is_set():
 				a += 1
 		except RuntimeError, e:
 			print("[INFO] Runtime Error")
@@ -38,6 +38,7 @@ class MainView:
 
 	def onClose(self):
 		print("[INFO] Closing")
-		self.stopEvent.set()
+		self.stopVideoLoop.set()
 		self.vs.stop()
 		self.root.quit()
+		self.root.destroy()
