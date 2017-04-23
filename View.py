@@ -4,7 +4,7 @@ import threading
 import imutils
 
 class MainView:
-	def __init__(self, vs, width=320, height=460):
+	def __init__(self, vs, width=320, height=450):
 		self.vs = vs
 
 		self.frame = None
