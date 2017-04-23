@@ -5,7 +5,7 @@ import imutils
 import time
 import cv2
 
-onPi = False
+onPi = True
 
 vs = VideoStream(usePiCamera=onPi).start()
 
@@ -33,24 +33,25 @@ def load_images(path):
 	c = 0
 	for dirname, dirnames, filenames in os.walk(path):
 		for subdirname in dirnames:
-			subjectPath = os.path.join(dirname, subdirname)
-			print str(c) + " - " + subdirname
-			people[c] = subdirname
-			for filename in os.listdir(subjectPath):
-				file = os.path.join(subjectPath, filename)
-				filename, file_extension = os.path.splitext(file)
-				if file_extension == '.jpg':
-					print(file)
-					try:
-						img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
-						img = cv2.resize(img, (100,100))
-						images.append(np.asarray(img, dtype=np.uint8))
-						labels.append(c)
-					except IOError, (errno, strerror):
-						print "IOError({0}): {1}".format(errno, strerror)
-					except:
-						print "Unexpected error"
-			c += 1
+			if not subdirname == 'ex':
+				subjectPath = os.path.join(dirname, subdirname)
+				#print str(c) + " - " + subdirname
+				people[c] = subdirname
+				for filename in os.listdir(subjectPath):
+					file = os.path.join(subjectPath, filename)
+					filename, file_extension = os.path.splitext(file)
+					if file_extension == '.jpg':
+						print(file)
+						try:
+							img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
+							img = cv2.resize(img, (100,100))
+							images.append(np.asarray(img, dtype=np.uint8))
+							labels.append(c)
+						except IOError, (errno, strerror):
+							print "IOError({0}): {1}".format(errno, strerror)
+						except:
+							print "Unexpected error"
+				c += 1
 		print(people)
 		return images, np.array(labels)
 
@@ -65,7 +66,7 @@ def detect(img, cascade):
 def save_faces(path, cascade):
 	images, labels = [], []
 	c = 0
-	print "test " + path
+	#print "test " + path
 	for dirname, dirnames, filenames in os.walk(path):
 		for subdirname in dirnames:
 			print str(c) + " - " + subdirname
