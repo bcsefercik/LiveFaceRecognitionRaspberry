@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=Hooisthere
+Name=Hoosthere
 Comment=Who Is There?
 Icon=/usr/share/pixmaps/openbox.xpm
-Exec=lxterminal -t "Hooisthere" --working-directory=/home/pi/ELEC491/ -e python bcs.py
+Exec=lxterminal -t "Hoosthere" --working-directory=/home/pi/ELEC491/ -e python App.py
 Type=Application
 Encoding=UTF-8
 Terminal=false
