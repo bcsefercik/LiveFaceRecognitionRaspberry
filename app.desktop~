@@ -1,9 +1,0 @@
-[Desktop Entry]
-Name=Hooisthere
-Comment=Who Is There?
-Icon=/usr/share/pixmaps/openbox.xpm
-Exec=lxterminal -t "Hooisthere" --working-directory=/home/pi/ELEC491/ -e ./app_script.sh
-Type=Application
-Encoding=UTF-8
-Terminal=false
-Categories=None;
