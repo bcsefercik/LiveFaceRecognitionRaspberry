@@ -7,7 +7,7 @@ import cv2
 
 onPi = False
 
-vs = VideoStream(usePiCamera=onPi).start()
+vs = VideoStream(usePiCamera=onPi, framerate=3).start()
 
 #time.sleep(2.0)
 

@@ -1,12 +1,18 @@
 from Recognizer import Recognizer
+from PIL import Image
+from PIL import ImageTk
 import Tkinter as tki
 import threading
 import imutils
+import time
+import cv2
 
 class MainView:
-	def __init__(self, vs, width=320, height=450):
+	def __init__(self, vs, width=320, height=450, framerate=25):
 		self.vs = vs
 
+		self.framerate = framerate
+		self.sleepduration = 1.0/self.framerate
 		self.frame = None
 		self.thread = None
 		self.stopEvent = None
@@ -14,6 +20,10 @@ class MainView:
 		self.root = tki.Tk()
 		self.root.resizable(width=False, height=False)
 		self.root.geometry('{}x{}'.format(width, height))
+
+		self.panelWidth = width
+
+		self.panel = None
 
 		self.button = tki.Button(self.root, text="Ring the Bell!", command=self.ring)
 		self.button.pack(side="bottom", fill="both", expand="yes", padx=10, pady=10)
@@ -27,9 +37,26 @@ class MainView:
 
 	def videoLoop(self):
 		try:
-			a = 0
+
 			while not self.stopVideoLoop.is_set():
-				a += 1
+				self.frame = self.vs.read()
+				self.frame = cv2.flip(self.frame,1)
+				self.frame = imutils.resize(self.frame, width=self.panelWidth)
+
+				image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+				image = Image.fromarray(image)
+				image = ImageTk.PhotoImage(image)
+
+				if self.panel is None:
+					self.panel = tki.Label(image=image, master=self.root)
+					self.panel.imgtk = image
+					self.panel.configure(image=image)
+					self.panel.pack()
+				else:
+					self.panel.configure(image=image)
+					self.panel.imgtk = image
+
+				time.sleep(self.sleepduration)
 		except RuntimeError, e:
 			print("[INFO] Runtime Error")
 	
