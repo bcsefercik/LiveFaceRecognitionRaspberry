@@ -11,13 +11,14 @@ class MainView:
 	def __init__(self, vs, width=320, height=450, framerate=25):
 		self.vs = vs
 
+		self.root = tki.Tk()
+		
 		self.framerate = framerate
 		self.sleepduration = 1.0/self.framerate
 		self.frame = None
 		self.thread = None
 		self.stopEvent = None
 
-		self.root = tki.Tk()
 		self.root.resizable(width=False, height=False)
 		self.root.geometry('{}x{}'.format(width, height))
 
