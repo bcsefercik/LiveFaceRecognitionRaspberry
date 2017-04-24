@@ -8,11 +8,11 @@ import time
 import cv2
 
 class MainView:
-	def __init__(self, vs, width=320, height=450, framerate=25):
+	def __init__(self, vs, width=320, height=450, framerate=32):
 		self.vs = vs
 
 		self.root = tki.Tk()
-		
+
 		self.framerate = framerate
 		self.sleepduration = 1.0/self.framerate
 		self.frame = None
