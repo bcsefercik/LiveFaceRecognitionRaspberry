@@ -31,7 +31,7 @@ class MainView:
 		self.thread = threading.Thread(target=self.videoLoop, args=())
 		self.thread.start()
 
-		self.root.wm_title("PyImageSearch PhotoBooth")
+		self.root.wm_title("Hoosthere")
 		self.root.wm_protocol("WM_DELETE_WINDOW", self.onClose)
 
 		self.recognizer = recognizer
