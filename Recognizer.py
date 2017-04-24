@@ -78,7 +78,7 @@ class Recognizer:
 		return None, None
 
 	def draw_str(self, dst, (x, y), s):
-		fontSize = 2.0
+		fontSize = 0.5
 		textSize, baseline = cv2.getTextSize(s, cv2.FONT_HERSHEY_DUPLEX, fontSize, thickness = 2) 
 		x = x - textSize[0]/2
 		y = y - textSize[1]

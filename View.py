@@ -58,8 +58,14 @@ class MainView:
 			print("[INFO] caught a RuntimeError")
 
 	def ring(self):
+		recognized_id, prediction = self.recognizer.recognize(self.frame)
+
+		if not recognized_id == None:
+			videoText = self.recognizer.people[recognized_id]
+		else:
+			videoText = "I don't know you!"
+		self.recognizer.draw_str(self.frame, (self.panelWidth/2,frame.shape[0]), videoText)
 		print('Ringed the bell!')
-		print(self.recognizer.people[self.recognizer.recognize(self.frame)[0]])
 		return 0
 
 	def onClose(self):
