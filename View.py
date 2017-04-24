@@ -24,10 +24,8 @@ class MainView:
 		self.framerate = framerate
 		self.sleepduration = 1.0/self.framerate
 
-		btn = tki.Button(self.root, text="Snapshot!",
-			command=self.takeSnapshot)
-		btn.pack(side="bottom", fill="both", expand="yes", padx=10,
-			pady=10)
+		self.button = tki.Button(self.root, text="Ring the Bell!", command=self.ring)
+		self.button.pack(side="bottom", fill="both", expand="yes", padx=10, pady=10)
 
 		self.stopEvent = threading.Event()
 		self.thread = threading.Thread(target=self.videoLoop, args=())
@@ -51,9 +49,7 @@ class MainView:
 				if self.panel is None:
 					self.panel = tki.Label(image=image)
 					self.panel.image = image
-					self.panel.pack(side="left", padx=0, pady=10)
-		
-				# otherwise, simply update the panel
+					self.panel.pack(side="left", padx=0, pady=0)
 				else:
 					self.panel.configure(image=image)
 					self.panel.image = image
@@ -61,21 +57,14 @@ class MainView:
 		except RuntimeError, e:
 			print("[INFO] caught a RuntimeError")
 
-	def takeSnapshot(self):
-		# grab the current timestamp and use it to construct the
-		# output path
-		ts = datetime.datetime.now()
-		filename = "{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
-		p = os.path.sep.join((self.outputPath, filename))
-
-		# save the file
-		cv2.imwrite(p, self.frame.copy())
-		print("[INFO] saved {}".format(filename))
+	def ring(self):
+		print('Ringed the bell!')
+		print(self.recognizer.people[self.recognizer.recognize(self.frame)[0]])
+		return 0
 
 	def onClose(self):
-		# set the stop event, cleanup the camera, and allow the rest of
-		# the quit process to continue
-		print("[INFO] closing...")
-		self.stopEvent.set()
+		print("[INFO] Closing")
+		self.stopVideoLoop.set()
 		self.vs.stop()
+		self.root.destroy()
 		self.root.quit()
