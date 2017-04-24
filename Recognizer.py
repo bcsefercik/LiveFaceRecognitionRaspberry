@@ -40,11 +40,11 @@ class Recognizer:
 			#print(self.people)
 			return images, np.array(labels)
 
-	def get_faces(self, img):
+	def detect_faces(self, img):
 		return self.cascade.detectMultiScale(img, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30), flags = cv2.CASCADE_SCALE_IMAGE)
 
 	def save_faces_img(self, prefix, img):
-		faces = self.get_faces(img)
+		faces = self.detect_faces(img)
 		c = 0
 		for face in faces:
 			x, y, h, w = [result for result in face]
@@ -67,7 +67,8 @@ class Recognizer:
 		return self.load_model()
 
 	def recognize(self, img):
-		faces = self.get_faces(img)
+		img = self.to_gray(img)
+		faces = self.detect_faces(img)
 		if len(faces) > 0:
 			i = 1
 			for face in faces:
@@ -75,14 +76,6 @@ class Recognizer:
 				resized = cv2.resize(img[y:y+h,x:x+w], (100,100))
 				return self.model.predict(resized)
 		return None, None
-
-	def detectFaces(self, image):
-		gray = to_gray(img)
-		rects = self.cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30), flags = cv2.CASCADE_SCALE_IMAGE)
-
-		if len(rects) == 0:
-			return []
-		return rects
 
 	def draw_str(self, dst, (x, y), s):
 		fontSize = 2.0

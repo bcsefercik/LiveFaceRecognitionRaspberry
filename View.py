@@ -35,6 +35,8 @@ class MainView:
 		self.root.wm_title("Hoosthere")
 		self.root.wm_protocol("WM_DELETE_WINDOW", self.onClose)
 
+		self.recognizer = Recognizer()
+
 	def videoLoop(self):
 		try:
 
@@ -61,6 +63,8 @@ class MainView:
 			print("[INFO] Runtime Error")
 	
 	def ring(self):
+		print('Ringed the bell!')
+		print(self.recognizer.people[self.recognizer.recognize(self.frame)[0]])
 		return 0
 
 	def onClose(self):
