@@ -13,7 +13,7 @@ class MainView:
 		self.outputPath = "outputPath"
 		self.frame = None
 		self.thread = None
-		self.stopEvent = None
+		self.stopVideoLoop = None
 
 		self.root = tki.Tk()
 		self.root.resizable(width=False, height=False)
@@ -27,7 +27,7 @@ class MainView:
 		self.button = tki.Button(self.root, text="Ring the Bell!", command=self.ring)
 		self.button.pack(side="bottom", fill="both", expand="yes", padx=10, pady=10)
 
-		self.stopEvent = threading.Event()
+		self.stopVideoLoop = threading.Event()
 		self.thread = threading.Thread(target=self.videoLoop, args=())
 		self.thread.start()
 
@@ -38,7 +38,7 @@ class MainView:
 
 	def videoLoop(self):
 		try:
-			while not self.stopEvent.is_set():
+			while not self.stopVideoLoop.is_set():
 				self.frame = self.vs.read()
 				self.frame = imutils.resize(self.frame, width=self.panelWidth)
 		
