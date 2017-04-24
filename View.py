@@ -50,13 +50,12 @@ class MainView:
 				image = ImageTk.PhotoImage(image=image)
 
 				if self.panel is None:
-					self.panel = tki.Label(image=image, master=self.root)
-					self.panel.configure(image=image)
-					self.panel.imgtk = image
-					self.panel.pack()
+					self.panel = tki.Label(image=image)
+					self.panel.image = image
+					self.panel.pack(side="left", padx=10, pady=10)
 				else:
-					self.panel.imgtk = image
 					self.panel.configure(image=image)
+					self.panel.image = image
 
 				time.sleep(self.sleepduration)
 		except RuntimeError, e:
