@@ -12,8 +12,6 @@ class MainView:
 		self.vs = vs
 
 		self.root = tki.Tk()
-		self.root.resizable(width=False, height=False)
-		self.root.geometry('{}x{}'.format(width, height))
 
 		self.framerate = framerate
 		self.sleepduration = 1.0/self.framerate
@@ -21,6 +19,8 @@ class MainView:
 		self.thread = None
 		self.stopEvent = None
 
+		self.root.resizable(width=False, height=False)
+		self.root.geometry('{}x{}'.format(width, height))
 
 		self.panelWidth = width
 
@@ -47,7 +47,7 @@ class MainView:
 
 				image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
 				image = Image.fromarray(image)
-				image = ImageTk.PhotoImage(image=image)
+				image = ImageTk.PhotoImage(image)
 
 				if self.panel is None:
 					self.panel = tki.Label(image=image, master=self.root)

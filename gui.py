@@ -33,6 +33,9 @@ if __name__ == '__main__':
     root=tk.Tk()                                     #assigning root variable for Tkinter as tk
     lmain = tk.Label(master=root)
     lmain.grid(column=0, rowspan=4, padx=5, pady=5)
+    button = tk.Button(root, text="Ring the Bell!")
+    button.pack(side="bottom", fill="both", expand="yes", padx=10, pady=10)
+
     root.title("Sign Language Processor")            #you can give any title
     show_vid()
     root.mainloop()                                  #keeps the application in an infinite loop so it works continuosly
