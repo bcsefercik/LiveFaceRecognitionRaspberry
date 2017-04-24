@@ -44,7 +44,7 @@ class MainView:
 				self.frame = self.vs.read()
 				iframe = imutils.resize(self.frame, width=self.panelWidth)
 				
-				if not videoText == None:
+				if not self.videoText == None:
 					self.recognizer.draw_str(iframe, (self.panelWidth/2,iframe.shape[0]), self.videoText)
 				
 				image = cv2.cvtColor(iframe, cv2.COLOR_BGR2RGB)
