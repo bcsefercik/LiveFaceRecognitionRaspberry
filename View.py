@@ -36,13 +36,18 @@ class MainView:
 
 		self.recognizer = recognizer
 
+		self.videoText = None
+
 	def videoLoop(self):
 		try:
 			while not self.stopVideoLoop.is_set():
 				self.frame = self.vs.read()
-				self.frame = imutils.resize(self.frame, width=self.panelWidth)
-		
-				image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+				iframe = imutils.resize(self.frame, width=self.panelWidth)
+				
+				if not videoText == None:
+					self.recognizer.draw_str(iframe, (self.panelWidth/2,iframe.shape[0]), self.videoText)
+				
+				image = cv2.cvtColor(iframe, cv2.COLOR_BGR2RGB)
 				image = Image.fromarray(image)
 				image = ImageTk.PhotoImage(image)
 		
@@ -61,10 +66,10 @@ class MainView:
 		recognized_id, prediction = self.recognizer.recognize(self.frame)
 
 		if not recognized_id == None:
-			videoText = self.recognizer.people[recognized_id]
+			self.videoText = self.recognizer.people[recognized_id]
 		else:
-			videoText = "I don't know you!"
-		self.recognizer.draw_str(self.frame, (self.panelWidth/2,frame.shape[0]), videoText)
+			self.videoText = "I don't know you!"
+		
 		print('Ringed the bell!')
 		return 0
 
