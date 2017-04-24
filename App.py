@@ -1,3 +1,4 @@
+from Recognizer import Recognizer
 from imutils.video import VideoStream
 from View import MainView
 import argparse
@@ -16,8 +17,10 @@ ap.add_argument("-fr", "--framerate", type=int, default=25,
 opt = vars(ap.parse_args())
 
 print("[INFO] Launching camera")
+
+recognizer = Recognizer()
 vs = VideoStream(usePiCamera=opt["picamera"] > 0).start()
 time.sleep(2.0)
-view = MainView(vs, width=opt["width"], height=opt["height"], framerate=opt["framerate"])
+view = MainView(vs, recognizer, width=opt["width"], height=opt["height"], framerate=opt["framerate"])
 
 view.root.mainloop()

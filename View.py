@@ -1,4 +1,3 @@
-from Recognizer import Recognizer
 from PIL import Image
 from PIL import ImageTk
 import Tkinter as tki
@@ -8,7 +7,7 @@ import time
 import cv2
 
 class MainView:
-	def __init__(self, vs, width=320, height=450, framerate=32):
+	def __init__(self, vs, recognizer, width=320, height=450, framerate=32):
 		
 		self.vs = vs
 		self.outputPath = "outputPath"
@@ -37,7 +36,7 @@ class MainView:
 		self.root.wm_title("PyImageSearch PhotoBooth")
 		self.root.wm_protocol("WM_DELETE_WINDOW", self.onClose)
 
-		self.recognizer = Recognizer()
+		self.recognizer = recognizer
 
 	def videoLoop(self):
 		try:
