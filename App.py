@@ -8,7 +8,7 @@ import time
 ap = argparse.ArgumentParser()
 ap.add_argument("-p", "--picamera", type=int, default=1,
 	help="Use Raspberry Camera")
-ap.add_argument("-w", "--width", type=int, default=320,
+ap.add_argument("-w", "--width", type=int, default=316,
 	help="Witdh of the window")
 ap.add_argument("-ht", "--height", type=int, default=450,
 	help="Height of the window")
