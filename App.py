@@ -17,7 +17,7 @@ opt = vars(ap.parse_args())
 
 print("[INFO] Launching camera")
 vs = VideoStream(usePiCamera=opt["picamera"] > 0).start()
-
+time.sleep(2.0)
 view = MainView(vs, width=opt["width"], height=opt["height"], framerate=opt["framerate"])
 
 view.root.mainloop()

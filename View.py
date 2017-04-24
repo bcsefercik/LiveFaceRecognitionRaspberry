@@ -57,7 +57,7 @@ class MainView:
 					self.panel.configure(image=image)
 					self.panel.image = image
 
-				time.sleep(self.sleepduration)
+				#time.sleep(self.sleepduration)
 		except RuntimeError, e:
 			print("[INFO] Runtime Error")
 	
@@ -70,5 +70,5 @@ class MainView:
 		print("[INFO] Closing")
 		self.stopVideoLoop.set()
 		self.vs.stop()
-		self.root.quit()
 		self.root.destroy()
+		self.root.quit()
