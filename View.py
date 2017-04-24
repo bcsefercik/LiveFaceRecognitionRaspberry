@@ -9,21 +9,22 @@ import cv2
 
 class MainView:
 	def __init__(self, vs, width=320, height=450, framerate=32):
-		# store the video stream object and output path, then initialize
-		# the most recently read frame, thread for reading frames, and
-		# the thread stop event
+		
 		self.vs = vs
-		self.outputPath = "outputPath"
+		self.outputPath = outputPath
 		self.frame = None
 		self.thread = None
 		self.stopEvent = None
 
-		# initialize the root window and image panel
 		self.root = tki.Tk()
+		self.root.resizable(width=False, height=False)
+		self.root.geometry('{}x{}'.format(width, height))
 		self.panel = None
+		self.panelWidth = width
 
-		# create a button, that when pressed, will take the current
-		# frame and save it to file
+		self.framerate = framerate
+		self.sleepduration = 1.0/self.framerate
+
 		btn = tki.Button(self.root, text="Snapshot!",
 			command=self.takeSnapshot)
 		btn.pack(side="bottom", fill="both", expand="yes", padx=10,
