@@ -38,9 +38,11 @@ class MainView:
 
 		self.videoText = None
 
+		self.showVideo = False
+
 	def videoLoop(self):
 		try:
-			while not self.stopVideoLoop.is_set():
+			while not self.stopVideoLoop.is_set() and self.showVideo:
 				self.frame = self.vs.read()
 				iframe = imutils.resize(self.frame, width=self.panelWidth)
 				
@@ -70,10 +72,8 @@ class MainView:
 		else:
 			self.videoText = "I don't know you!"
 		
-		if self.stopVideoLoop.is_set():
-			self.stopVideoLoop.start()
-		else:
-			self.stopVideoLoop.set()
+		self.showVideo = not self.showVideo
+
 		print('Ringed the bell!')
 		return 0
 
