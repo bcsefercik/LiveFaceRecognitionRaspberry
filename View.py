@@ -70,6 +70,10 @@ class MainView:
 		else:
 			self.videoText = "I don't know you!"
 		
+		if self.stopVideoLoop.is_set():
+			self.stopVideoLoop.start()
+		else:
+			self.stopVideoLoop.set()
 		print('Ringed the bell!')
 		return 0
 
