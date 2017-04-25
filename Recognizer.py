@@ -66,16 +66,17 @@ class Recognizer:
 	def train(self):
 		return self.load_model()
 
-	def recognize(self, img):
+	def recognize(self, img, faces=None):
 		img = self.to_gray(img)
-		faces = self.detect_faces(img)
+		if faces == None:
+			faces = self.detect_faces(img)
+		res = []
 		if len(faces) > 0:
-			i = 1
 			for face in faces:
 				x, y, h, w = [result for result in face]
 				resized = cv2.resize(img[y:y+h,x:x+w], (100,100))
-				return self.model.predict(resized)
-		return None, None
+				res.append(self.model.predict(resized))
+		return res
 
 	def draw_str(self, dst, (x, y), s):
 		fontSize = 0.5

@@ -52,6 +52,15 @@ class MainView:
 						self.recognizer.draw_str(iframe, (self.panelWidth/2,iframe.shape[0]), self.videoText)
 					
 					image = cv2.cvtColor(iframe, cv2.COLOR_BGR2RGB)
+
+					faces = self.recognizer.detect_faces(image)
+
+					for face in faces:
+						x0, y0, h, w = [result for result in face]
+						x1 = x0 + w
+						y1 = y0 + h
+						cv2.rectangle(image, (x0,y0),(x1,y1),(0,234,12),1)
+
 					image = Image.fromarray(image)
 					image = ImageTk.PhotoImage(image)
 					
@@ -67,12 +76,15 @@ class MainView:
 			print("[INFO] caught a RuntimeError")
 
 	def ring(self):
-		recognized_id, prediction = self.recognizer.recognize(self.frame)
+		recognized = self.recognizer.recognize(self.frame)
 
-		if not recognized_id == None:
-			self.videoText = self.recognizer.people[recognized_id]
-		else:
-			self.videoText = "I don't know you!"
+		if len(recognized) > 0:
+			recognized_id, prediction = recognized[0]
+
+			if not recognized_id == None:
+				self.videoText = self.recognizer.people[recognized_id]
+			else:
+				self.videoText = "I don't know you!"
 		
 		#self.showVideo = not self.showVideo
 		#print(self.showVideo)
