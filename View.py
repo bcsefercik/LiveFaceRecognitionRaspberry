@@ -27,6 +27,8 @@ class MainView:
 		self.button = tki.Button(self.root, text="Ring the Bell!", command=self.ring)
 		self.button.pack(side="bottom", fill="both", expand="yes", padx=10, pady=10)
 
+		self.showVideo = True
+
 		self.stopVideoLoop = threading.Event()
 		self.thread = threading.Thread(target=self.videoLoop, args=())
 		self.thread.start()
@@ -38,28 +40,28 @@ class MainView:
 
 		self.videoText = None
 
-		self.showVideo = False
 
 	def videoLoop(self):
 		try:
-			while not self.stopVideoLoop.is_set() and self.showVideo:
-				self.frame = self.vs.read()
-				iframe = imutils.resize(self.frame, width=self.panelWidth)
-				
-				if not self.videoText == None:
-					self.recognizer.draw_str(iframe, (self.panelWidth/2,iframe.shape[0]), self.videoText)
-				
-				image = cv2.cvtColor(iframe, cv2.COLOR_BGR2RGB)
-				image = Image.fromarray(image)
-				image = ImageTk.PhotoImage(image)
-		
-				if self.panel is None:
-					self.panel = tki.Label(image=image)
-					self.panel.image = image
-					self.panel.pack(side="left", padx=0, pady=0)
-				else:
-					self.panel.configure(image=image)
-					self.panel.image = image
+			while (not self.stopVideoLoop.is_set()):
+				if self.showVideo:
+					self.frame = self.vs.read()
+					iframe = imutils.resize(self.frame, width=self.panelWidth)
+					
+					if not self.videoText == None:
+						self.recognizer.draw_str(iframe, (self.panelWidth/2,iframe.shape[0]), self.videoText)
+					
+					image = cv2.cvtColor(iframe, cv2.COLOR_BGR2RGB)
+					image = Image.fromarray(image)
+					image = ImageTk.PhotoImage(image)
+					
+					if self.panel is None:
+						self.panel = tki.Label(image=image)
+						self.panel.image = image
+						self.panel.pack(side="left", padx=0, pady=0)
+					else:
+						self.panel.configure(image=image)
+						self.panel.image = image
 
 		except RuntimeError, e:
 			print("[INFO] caught a RuntimeError")
@@ -72,7 +74,8 @@ class MainView:
 		else:
 			self.videoText = "I don't know you!"
 		
-		self.showVideo = not self.showVideo
+		#self.showVideo = not self.showVideo
+		#print(self.showVideo)
 
 		print('Ringed the bell!')
 		return 0

@@ -1,5 +1,5 @@
-from imutils.video import VideoStream
-import os
+	from imutils.video import VideoStream
+	import os
 import numpy as np
 import imutils
 import time
