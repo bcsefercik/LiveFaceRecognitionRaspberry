@@ -83,8 +83,8 @@ class MainView:
 
 			if not recognized_id == None:
 				self.videoText = self.recognizer.people[recognized_id]
-			else:
-				self.videoText = "I don't know you!"
+		else:
+			self.videoText = "I don't know you!"
 		
 		#self.showVideo = not self.showVideo
 		#print(self.showVideo)
