@@ -8,6 +8,8 @@ import cv2
 
 class MainView:
 	def __init__(self, vs, recognizer, width=320, height=450, framerate=32):
+
+		self.state = 0
 		
 		self.vs = vs
 		self.outputPath = "outputPath"
