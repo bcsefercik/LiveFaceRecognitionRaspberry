@@ -20,14 +20,20 @@ class MainView:
 		self.root = tki.Tk()
 		self.root.resizable(width=False, height=False)
 		self.root.geometry('{}x{}'.format(width, height))
+
+		self.container = tki.Frame(self.root)
+		self.container.pack(side="top", fill="both", expand=True)
+
 		self.panel = None
 		self.panelWidth = width
 
 		self.framerate = framerate
 		self.sleepduration = 1.0/self.framerate
 
-		self.button = tki.Button(self.root, text="Ring the Bell!", command=self.ring)
-		self.button.pack(side="bottom", fill="both", expand="yes", padx=10, pady=10)
+		self.button = tki.Button(text="Ring the Bell!", command=self.ring)
+		self.button.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
+
+		self.text = tki.Text(self.container)
 
 		self.showVideo = True
 
@@ -46,6 +52,11 @@ class MainView:
 	def videoLoop(self):
 		try:
 			while (not self.stopVideoLoop.is_set()):
+				if self.state == 0:
+					time.sleep(self.sleepduration)
+				elif self.state == 1:
+					time.sleep(self.sleepduration)
+
 				if self.showVideo:
 					self.frame = self.vs.read()
 					iframe = imutils.resize(self.frame, width=self.panelWidth)
@@ -67,7 +78,7 @@ class MainView:
 					image = ImageTk.PhotoImage(image)
 					
 					if self.panel is None:
-						self.panel = tki.Label(image=image)
+						self.panel = tki.Label(self.container,image=image)
 						self.panel.image = image
 						self.panel.pack(side="left", padx=0, pady=0)
 					else:
@@ -78,15 +89,18 @@ class MainView:
 			print("[INFO] caught a RuntimeError")
 
 	def ring(self):
-		recognized = self.recognizer.recognize(self.frame)
+		#recognized = self.recognizer.recognize(self.frame)
+		self.button.configure(text="red", background = "red")
+		time.sleep(1)
+		self.button.lower(self.container)
 
-		if len(recognized) > 0:
-			recognized_id, prediction = recognized[0]
+		# if len(recognized) > 0:
+		# 	recognized_id, prediction = recognized[0]
 
-			if not recognized_id == None:
-				self.videoText = self.recognizer.people[recognized_id]
-		else:
-			self.videoText = "I don't know you!"
+		# 	if not recognized_id == None:
+		# 		self.videoText = self.recognizer.people[recognized_id]
+		# else:
+		# 	self.videoText = "I don't know you!"
 		
 		#self.showVideo = not self.showVideo
 		#print(self.showVideo)
