@@ -7,7 +7,7 @@ import time
 import cv2
 
 class MainView:
-	def __init__(self, vs, recognizer, width=320, height=450, framerate=32):
+	def __init__(self, vs, recognizer, width=320, height=450, framerate=32, videoduration=3):
 
 		self.state = 0
 		
@@ -47,7 +47,10 @@ class MainView:
 		self.recognizer = recognizer
 
 		self.videoText = None
-
+		self.videoDuration = videoduration*self.framerate
+		self.videoRecord = 0
+		self.videoCodec = cv2.cv.CV_FOURCC(*'MP4V')
+		self.video = None
 
 	def videoLoop(self):
 		try:
@@ -87,6 +90,15 @@ class MainView:
 						self.panel.configure(image=image)
 						self.panel.image = image
 
+					#Video Recording
+					if self.videoRecord > 0:
+						self.videoRecord -= 1
+						video.write(iframe)
+
+						if self.videoRecord == 0:
+							self.video.release()
+							self.video = None
+
 		except RuntimeError, e:
 			print("[INFO] caught a RuntimeError")
 
@@ -112,5 +124,16 @@ class MainView:
 		print("[INFO] Closing")
 		self.stopVideoLoop.set()
 		self.vs.stop()
-		self.root.destroy()
+		#self.root.destroy()
 		self.root.quit()
+
+	def initVideo(self):
+		self.videoRecord = self.videoduration
+
+		try:
+			os.remove('output.mp4')
+		except OSError:
+			pass
+
+		self.video = cv2.VideoWriter('output.mp4', self.videoCodec, 13.0, (self.panelWidth,self.frame.shape[0]))
+
