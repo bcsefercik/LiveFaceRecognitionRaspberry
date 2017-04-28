@@ -5,6 +5,7 @@ import threading
 import imutils
 import time
 import cv2
+import os
 
 class MainView:
 	def __init__(self, vs, recognizer, width=320, height=450, framerate=32, videoduration=3):
@@ -91,9 +92,9 @@ class MainView:
 						self.panel.image = image
 
 					#Video Recording
-					if self.videoRecord > 0:
+					if (not self.video == None) and self.videoRecord > 0:
 						self.videoRecord -= 1
-						video.write(iframe)
+						self.video.write(iframe)
 
 						if self.videoRecord == 0:
 							self.video.release()
@@ -103,6 +104,7 @@ class MainView:
 			print("[INFO] caught a RuntimeError")
 
 	def ring(self):
+		self.initVideo()
 		recognized = self.recognizer.recognize(self.frame)
 		self.button.configure(text="red", background = "red")
 
@@ -118,6 +120,7 @@ class MainView:
 		print(self.showVideo)
 
 		print('Ringed the bell!')
+
 		return 0
 
 	def onClose(self):
@@ -128,7 +131,7 @@ class MainView:
 		self.root.quit()
 
 	def initVideo(self):
-		self.videoRecord = self.videoduration
+		self.videoRecord = self.videoDuration
 
 		try:
 			os.remove('output.mp4')
