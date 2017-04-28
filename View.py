@@ -60,6 +60,8 @@ class MainView:
 				if self.showVideo:
 					self.frame = self.vs.read()
 					iframe = imutils.resize(self.frame, width=self.panelWidth)
+					iframe = cv2.flip(iframe,1)
+
 					
 					if not self.videoText == None:
 						self.recognizer.draw_str(iframe, (self.panelWidth/2,iframe.shape[0]), self.videoText)
@@ -89,21 +91,19 @@ class MainView:
 			print("[INFO] caught a RuntimeError")
 
 	def ring(self):
-		#recognized = self.recognizer.recognize(self.frame)
+		recognized = self.recognizer.recognize(self.frame)
 		self.button.configure(text="red", background = "red")
-		time.sleep(1)
-		self.button.lower(self.container)
 
-		# if len(recognized) > 0:
-		# 	recognized_id, prediction = recognized[0]
+		if len(recognized) > 0:
+			recognized_id, prediction = recognized[0]
 
-		# 	if not recognized_id == None:
-		# 		self.videoText = self.recognizer.people[recognized_id]
-		# else:
-		# 	self.videoText = "I don't know you!"
+			if not recognized_id == None:
+				self.videoText = self.recognizer.people[recognized_id]
+		else:
+			self.videoText = "I don't know you!"
 		
 		#self.showVideo = not self.showVideo
-		#print(self.showVideo)
+		print(self.showVideo)
 
 		print('Ringed the bell!')
 		return 0

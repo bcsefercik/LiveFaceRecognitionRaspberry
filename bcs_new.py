@@ -13,7 +13,7 @@ vs = VideoStream(usePiCamera=onPi).start()
 
 people = {}
 
-videoWidth = 1200
+videoWidth = 800
 recordVideo = 0
 videoText = ""
 
@@ -187,7 +187,7 @@ while True:
 		except OSError:
 			pass
 
-		video = cv2.VideoWriter('output.mp4', fourcc, 13.0, (videoWidth,450))
+		video = cv2.VideoWriter('output.mp4', fourcc, 13.0, (videoWidth,frame.shape[0]))
 
 		frame = to_gray(frame)
 		label, confidence = recognize(frame, faceCascade, model)
