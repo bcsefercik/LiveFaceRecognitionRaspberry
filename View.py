@@ -48,9 +48,9 @@ class MainView:
 		self.recognizer = recognizer
 
 		self.videoText = None
-		self.videoDuration = videoduration*self.framerate
+		self.videoDuration = videoduration*self.framerate*0.5
 		self.videoRecord = 0
-		self.videoCodec = cv2.cv.CV_FOURCC(*'MP4V')
+		self.videoCodec = cv2.cv.CV_FOURCC(*'MJPG')
 		self.video = None
 
 	def videoLoop(self):
@@ -66,7 +66,6 @@ class MainView:
 					iframe = imutils.resize(self.frame, width=self.panelWidth)
 					iframe = cv2.flip(iframe,1)
 
-					
 					if not self.videoText == None:
 						self.recognizer.draw_str(iframe, (self.panelWidth/2,iframe.shape[0]), self.videoText)
 					
@@ -94,11 +93,13 @@ class MainView:
 					#Video Recording
 					if (not self.video == None) and self.videoRecord > 0:
 						self.videoRecord -= 1
-						self.video.write(iframe)
+						self.video.write(self.frame)
 
 						if self.videoRecord == 0:
 							self.video.release()
 							self.video = None
+				print(self.sleepduration)
+				time.sleep(self.sleepduration)
 
 		except RuntimeError, e:
 			print("[INFO] caught a RuntimeError")
@@ -134,9 +135,9 @@ class MainView:
 		self.videoRecord = self.videoDuration
 
 		try:
-			os.remove('output.mp4')
+			os.remove('output1.avi')
 		except OSError:
 			pass
 
-		self.video = cv2.VideoWriter('output.mp4', self.videoCodec, 13.0, (self.panelWidth,self.frame.shape[0]))
+		self.video = cv2.VideoWriter('output1.avi', self.videoCodec, self.framerate*0.5, (self.frame.shape[1],self.frame.shape[0]))
 
