@@ -1,11 +1,13 @@
 from PIL import Image
 from PIL import ImageTk
 import Tkinter as tki
+import tkFont
 import threading
 import imutils
 import time
 import cv2
 import os
+import subprocess
 
 class MainView:
 	def __init__(self, vs, recognizer, width=320, height=450, framerate=32, videoduration=5):
@@ -31,10 +33,11 @@ class MainView:
 		self.framerate = framerate
 		self.sleepduration = 1.0/self.framerate
 
-		self.button = tki.Button(text="Ring the Bell!", command=self.ring)
-		self.button.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
+		self.headerFont = tkFont.Font(family='Helvetica', size=130, weight='bold')
 
-		self.text = tki.Text(self.container)
+		self.button = tki.Button(text=u"\u266C", command=self.ring)
+		self.button.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
+		self.button['font'] = self.headerFont
 
 		self.showVideo = True
 
@@ -48,7 +51,7 @@ class MainView:
 		self.recognizer = recognizer
 
 		self.videoText = None
-		self.videoDuration = videoduration*self.framerate*0.5
+		self.videoDuration = videoduration*self.framerate/2
 		self.videoRecord = 0
 		self.videoCodec = cv2.cv.CV_FOURCC(*'MJPG')
 		self.video = None
@@ -59,9 +62,6 @@ class MainView:
 				if self.state == 0:
 					time.sleep(self.sleepduration)
 				elif self.state == 1:
-					time.sleep(self.sleepduration)
-
-				if self.showVideo:
 					self.frame = self.vs.read()
 					iframe = imutils.resize(self.frame, width=self.panelWidth)
 					iframe = cv2.flip(iframe,1)
@@ -98,7 +98,10 @@ class MainView:
 						if self.videoRecord == 0:
 							self.video.release()
 							self.video = None
-				print(self.sleepduration)
+							#os.system('ffmpeg -i output.avi output.mp4')
+							FNULL = open(os.devnull, 'w')
+							subprocess.call('ffmpeg -i output.avi output.mp4', shell=True, stdout=FNULL, stderr=subprocess.STDOUT)
+							FNULL = None
 				time.sleep(self.sleepduration)
 
 		except RuntimeError, e:
@@ -107,7 +110,7 @@ class MainView:
 	def ring(self):
 		self.initVideo()
 		recognized = self.recognizer.recognize(self.frame)
-		self.button.configure(text="red", background = "red")
+		#self.button.configure(text="red", background = "red")
 
 		if len(recognized) > 0:
 			recognized_id, prediction = recognized[0]
@@ -118,7 +121,12 @@ class MainView:
 			self.videoText = "I don't know you!"
 		
 		#self.showVideo = not self.showVideo
-		print(self.showVideo)
+	
+		self.button.pack_forget()
+		self.panel.pack_forget()
+		time.sleep(2)
+		self.panel.pack()
+		self.button.pack()
 
 		print('Ringed the bell!')
 
@@ -136,6 +144,7 @@ class MainView:
 
 		try:
 			os.remove('output.avi')
+			os.remove('output.mp4')
 		except OSError:
 			pass
 
