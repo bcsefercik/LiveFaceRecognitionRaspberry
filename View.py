@@ -8,7 +8,7 @@ import cv2
 import os
 
 class MainView:
-	def __init__(self, vs, recognizer, width=320, height=450, framerate=32, videoduration=3):
+	def __init__(self, vs, recognizer, width=320, height=450, framerate=32, videoduration=5):
 
 		self.state = 0
 		
@@ -139,5 +139,5 @@ class MainView:
 		except OSError:
 			pass
 
-		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate*0.5, (self.frame.shape[1],self.frame.shape[0]))
+		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/2, (self.frame.shape[1],self.frame.shape[0]))
 
