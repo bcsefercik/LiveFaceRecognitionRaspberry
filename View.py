@@ -10,7 +10,7 @@ import os
 import subprocess
 
 class MainView:
-	def __init__(self, vs, recognizer, width=320, height=450, framerate=32, videoduration=5):
+	def __init__(self, vs, recognizer, width=320, height=450, framerate=32, videoduration=3):
 
 		self.state = 0
 		
@@ -34,10 +34,12 @@ class MainView:
 		self.sleepduration = 1.0/self.framerate
 
 		self.headerFont = tkFont.Font(family='Helvetica', size=130, weight='bold')
+		self.textFont = tkFont.Font(family='Helvetica', size=18, weight='normal')
 
-		self.button = tki.Button(text=u"\u266C", command=self.ring)
+		self.button = tki.Button(text=u"\u266C", command=self.ring, font=self.headerFont)
 		self.button.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
-		self.button['font'] = self.headerFont
+
+		self.textPanel = tki.Label(self.container, text="Hello, world", font=self.textFont)
 
 		self.showVideo = True
 
@@ -60,7 +62,7 @@ class MainView:
 		try:
 			while (not self.stopVideoLoop.is_set()):
 				if self.state == 0:
-					time.sleep(self.sleepduration)
+					time.sleep(self.sleepduration*3)
 				elif self.state == 1:
 					self.frame = self.vs.read()
 					iframe = imutils.resize(self.frame, width=self.panelWidth)
@@ -83,6 +85,9 @@ class MainView:
 					image = ImageTk.PhotoImage(image)
 					
 					if self.panel is None:
+						self.textPanel['text'] = 'Please show \nyour face clearly. \nA green rectangle \nwill appear \naround your face.'
+						self.textPanel['fg'] = '#a71c34'
+						self.textPanel.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
 						self.panel = tki.Label(self.container,image=image)
 						self.panel.image = image
 						self.panel.pack(side="left", padx=0, pady=0)
@@ -108,29 +113,29 @@ class MainView:
 			print("[INFO] caught a RuntimeError")
 
 	def ring(self):
-		self.initVideo()
-		recognized = self.recognizer.recognize(self.frame)
-		#self.button.configure(text="red", background = "red")
-
-		if len(recognized) > 0:
-			recognized_id, prediction = recognized[0]
-
-			if not recognized_id == None:
-				self.videoText = self.recognizer.people[recognized_id]
-		else:
-			self.videoText = "I don't know you!"
-		
-		#self.showVideo = not self.showVideo
-	
+		self.state = 1
 		self.button.pack_forget()
-		self.panel.pack_forget()
-		time.sleep(2)
-		self.panel.pack()
-		self.button.pack()
 
-		print('Ringed the bell!')
+		# recognized = self.recognizer.recognize(self.frame)
+		# #self.button.configure(text="red", background = "red")
 
-		return 0
+		# if len(recognized) > 0:
+		# 	recognized_id, prediction = recognized[0]
+
+		# 	if not recognized_id == None:
+		# 		self.videoText = self.recognizer.people[recognized_id]
+		# else:
+		# 	self.videoText = "I don't know you!"
+		
+		# #self.showVideo = not self.showVideo
+	
+		# self.button.pack_forget()
+		# self.panel.pack_forget()
+		# time.sleep(2)
+		# self.panel.pack()
+		# self.button.pack()
+
+		# print('Ringed the bell!')
 
 	def onClose(self):
 		print("[INFO] Closing")
