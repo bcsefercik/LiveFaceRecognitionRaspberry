@@ -135,9 +135,9 @@ class MainView:
 		self.videoRecord = self.videoDuration
 
 		try:
-			os.remove('output1.avi')
+			os.remove('output.avi')
 		except OSError:
 			pass
 
-		self.video = cv2.VideoWriter('output1.avi', self.videoCodec, self.framerate*0.5, (self.frame.shape[1],self.frame.shape[0]))
+		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate*0.5, (self.frame.shape[1],self.frame.shape[0]))
 
