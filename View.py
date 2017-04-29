@@ -16,7 +16,7 @@ class MainView:
 		
 		self.vs = vs
 		self.outputPath = "outputPath"
-		self.frame = None
+		self.frame = self.vs.read()
 		self.thread = None
 		self.stopVideoLoop = None
 
@@ -41,8 +41,6 @@ class MainView:
 
 		self.textPanel = tki.Label(self.container, text="Hello, world", font=self.textFont)
 
-		self.showVideo = True
-
 		self.stopVideoLoop = threading.Event()
 		self.thread = threading.Thread(target=self.videoLoop, args=())
 		self.thread.start()
@@ -59,6 +57,7 @@ class MainView:
 		self.video = None
 
 	def videoLoop(self):
+		predictions = []
 		try:
 			while (not self.stopVideoLoop.is_set()):
 				if self.state == 0:
@@ -67,13 +66,15 @@ class MainView:
 					self.frame = self.vs.read()
 					iframe = imutils.resize(self.frame, width=self.panelWidth)
 					iframe = cv2.flip(iframe,1)
-
 					if not self.videoText == None:
 						self.recognizer.draw_str(iframe, (self.panelWidth/2,iframe.shape[0]), self.videoText)
 					
 					image = cv2.cvtColor(iframe, cv2.COLOR_BGR2RGB)
 
 					faces = self.recognizer.detect_faces(image)
+
+					if self.videoRecord == 0 and len(faces) > 0:
+						self.videoRecord = self.videoDuration
 
 					for face in faces:
 						x0, y0, h, w = [result for result in face]
@@ -100,6 +101,9 @@ class MainView:
 						self.videoRecord -= 1
 						self.video.write(self.frame)
 
+						if self.videoRecord%5 == 0:
+							predictions.append(self.recognizer.recognize(self.frame))
+
 						if self.videoRecord == 0:
 							self.video.release()
 							self.video = None
@@ -107,7 +111,10 @@ class MainView:
 							FNULL = open(os.devnull, 'w')
 							subprocess.call('ffmpeg -i output.avi output.mp4', shell=True, stdout=FNULL, stderr=subprocess.STDOUT)
 							FNULL = None
-				time.sleep(self.sleepduration)
+							self.state = 2
+					time.sleep(self.sleepduration)
+				else:
+					time.sleep(5)
 
 		except RuntimeError, e:
 			print("[INFO] caught a RuntimeError")
@@ -115,6 +122,7 @@ class MainView:
 	def ring(self):
 		self.state = 1
 		self.button.pack_forget()
+		self.initVideo()
 
 		# recognized = self.recognizer.recognize(self.frame)
 		# #self.button.configure(text="red", background = "red")
@@ -145,7 +153,6 @@ class MainView:
 		self.root.quit()
 
 	def initVideo(self):
-		self.videoRecord = self.videoDuration
 
 		try:
 			os.remove('output.avi')
