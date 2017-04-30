@@ -16,9 +16,12 @@ ap.add_argument("-fr", "--framerate", type=int, default=25,
 	help="Frame rate of the camera")
 opt = vars(ap.parse_args())
 
-print("[INFO] Launching camera")
 
 recognizer = Recognizer()
+print('INFO: People: ')
+print(recognizer.people)
+
+print("INFO: Launching camera")
 vs = VideoStream(usePiCamera=opt["picamera"] > 0).start()
 time.sleep(2.0)
 view = MainView(vs, recognizer, width=opt["width"], height=opt["height"], framerate=opt["framerate"])

@@ -61,8 +61,8 @@ class MainView:
 		self.videoCodec = cv2.cv.CV_FOURCC(*'MJPG')
 		self.video = None
 
+		self.predictions = []
 	def videoLoop(self):
-		predictions = []
 		try:
 			while (not self.stopVideoLoop.is_set()):
 				if self.state == 0:
@@ -108,7 +108,7 @@ class MainView:
 						self.video.write(self.frame)
 
 						if self.videoRecord%5 == 0:
-							predictions.append(self.recognizer.recognize(self.frame))
+							self.predictions.append(self.recognizer.recognize(self.frame))
 							print('INFO: Calling recognize()')
 
 						if self.videoRecord == 0:
@@ -130,18 +130,25 @@ class MainView:
 				elif self.state == 2:
 					print('INFO: Uploading video.')
 
-					self.textPanel['text'] = u"\u0489" + '\n\nProcessing...'
-					self.textPanel['font'] = self.textFont
-					self.textPanel.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
+					if self.textPanel['text'] == '':
+						self.textPanel['text'] = u"\u0489" + '\n\nProcessing...'
+						self.textPanel['font'] = self.textFont
+						self.textPanel.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
 
 					data = open('output.mp4', 'rb')
-					self.videoS3Name = str(int(round(time.time() * 1000))) + '.mp4'
-					self.s3.Bucket('hoosthere-bucket').put_object(Key=self.videoS3Name, Body=data, ACL='public-read')
+					self.videoS3Name = str(int(round(time.time() * 1000)))
+					self.s3.Bucket('hoosthere-bucket').put_object(Key=self.videoS3Name + '.mp4', Body=data, ACL='public-read')
 					data = None
 					print('INFO: Video uploaded.')
-					print(self.videoS3Name)
-					time.sleep(5)
+					print('INFO: Video ID: ' + self.videoS3Name)
+					print('INFO: Predictions: ')
+					print(self.predictions)
+					
+					self.textPanel['text'] = ''
+					self.textPanel.pack_forget()
+					self.state, person = self.evalPredictions()
 				else:
+					print(212)
 					time.sleep(5)
 
 		except RuntimeError, e:
@@ -189,4 +196,14 @@ class MainView:
 			pass
 
 		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/2, (self.frame.shape[1],self.frame.shape[0]))
+
+	def evalPredictions(self, picthreshold=75, voicethreshold=90):
+		scores = {}
+
+		for ps in self.predictions:
+			for p in ps:
+				print(p[0])
+
+		return 3,0
+
 
