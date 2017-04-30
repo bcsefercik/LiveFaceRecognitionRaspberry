@@ -8,11 +8,16 @@ import time
 import cv2
 import os
 import subprocess
+import boto3
+
 
 class MainView:
 	def __init__(self, vs, recognizer, width=320, height=450, framerate=32, videoduration=3):
 
 		self.state = 0
+
+		self.s3 = boto3.resource('s3')
+		self.videoS3Name = ''
 		
 		self.vs = vs
 		self.outputPath = "outputPath"
@@ -75,6 +80,7 @@ class MainView:
 
 					if self.videoRecord == 0 and len(faces) > 0:
 						self.videoRecord = self.videoDuration
+						print('INFO: Started video recording.')
 
 					for face in faces:
 						x0, y0, h, w = [result for result in face]
@@ -103,21 +109,43 @@ class MainView:
 
 						if self.videoRecord%5 == 0:
 							predictions.append(self.recognizer.recognize(self.frame))
+							print('INFO: Calling recognize()')
 
 						if self.videoRecord == 0:
 							self.video.release()
 							self.video = None
+							print('INFO: Video saved.')
 							#os.system('ffmpeg -i output.avi output.mp4')
 							FNULL = open(os.devnull, 'w')
 							subprocess.call('ffmpeg -i output.avi output.mp4', shell=True, stdout=FNULL, stderr=subprocess.STDOUT)
 							FNULL = None
+							print('INFO: Video conversion is completed.')
+
+							#Moving to next state.
+							self.panel.pack_forget()
+							self.panel = None
+							self.textPanel.pack_forget()
 							self.state = 2
 					time.sleep(self.sleepduration)
+				elif self.state == 2:
+					print('INFO: Uploading video.')
+
+					self.textPanel['text'] = u"\u0489" + '\n\nProcessing...'
+					self.textPanel['font'] = self.textFont
+					self.textPanel.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
+
+					data = open('output.mp4', 'rb')
+					self.videoS3Name = str(int(round(time.time() * 1000))) + '.mp4'
+					self.s3.Bucket('hoosthere-bucket').put_object(Key=self.videoS3Name, Body=data, ACL='public-read')
+					data = None
+					print('INFO: Video uploaded.')
+					print(self.videoS3Name)
+					time.sleep(5)
 				else:
 					time.sleep(5)
 
 		except RuntimeError, e:
-			print("[INFO] caught a RuntimeError")
+			print("INFO: caught a RuntimeError")
 
 	def ring(self):
 		self.state = 1
