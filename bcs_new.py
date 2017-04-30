@@ -5,7 +5,7 @@ import imutils
 import time
 import cv2
 
-onPi = False
+onPi = True
 
 vs = VideoStream(usePiCamera=onPi).start()
 
