@@ -262,7 +262,7 @@ class MainView:
 			person = -1
 			state = 5
 
-		#sns.send_push(body= self.recognizer.people[maxID] + ' at the door.', device_id = 'ba0db49ca4b9aa492e8bef9248b91e5a71fec98610e91d58d23575db89b74fbe', access_key_id="AKIAIINNC2NLNUSC7PNA", secret_access_key="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")
+		sns.send_push(body= self.recognizer.people[maxID] + ' at the door.', device_id = 'ba0db49ca4b9aa492e8bef9248b91e5a71fec98610e91d58d23575db89b74fbe', access_key_id="AKIAIINNC2NLNUSC7PNA", secret_access_key="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")
 		return state, person
 
 
