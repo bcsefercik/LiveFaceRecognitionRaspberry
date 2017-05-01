@@ -40,10 +40,11 @@ class MainView:
 		self.sleepduration = 1.0/self.framerate
 
 		self.headerFont = tkFont.Font(family='Helvetica', size=130, weight='bold')
+		self.subHeaderFont = tkFont.Font(family='Helvetica', size=34, weight='bold')
 		self.textFont = tkFont.Font(family='Helvetica', size=18, weight='normal')
 
 		self.button = tki.Button(text=u"\u266C", command=self.ring, font=self.headerFont)
-		self.button.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
+		self.buttonPacked = False
 
 		self.textPanel = tki.Label(self.container, text="Hello, world", font=self.textFont)
 
@@ -63,10 +64,18 @@ class MainView:
 		self.video = None
 
 		self.predictions = []
+
+		self.message = ''
+
+		self.recognizedPerson = -1
 	def videoLoop(self):
 		try:
 			while (not self.stopVideoLoop.is_set()):
 				if self.state == 0:
+					if not self.buttonPacked:
+						self.button.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
+						self.buttonPacked = True
+
 					time.sleep(self.sleepduration*3)
 				elif self.state == 1:
 					self.frame = self.vs.read()
@@ -95,6 +104,7 @@ class MainView:
 					if self.panel is None:
 						self.textPanel['text'] = 'Please show \nyour face clearly. \nA green rectangle \nwill appear \naround your face.'
 						self.textPanel['fg'] = '#a71c34'
+						self.textPanel['font'] = self.textFont
 						self.textPanel.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
 						self.panel = tki.Label(self.container,image=image)
 						self.panel.image = image
@@ -126,6 +136,7 @@ class MainView:
 							self.panel.pack_forget()
 							self.panel = None
 							self.textPanel.pack_forget()
+							print('STATE: 1 -> 2')
 							self.state = 2
 					time.sleep(self.sleepduration)
 				elif self.state == 2:
@@ -147,9 +158,36 @@ class MainView:
 					
 					self.textPanel['text'] = ''
 					self.textPanel.pack_forget()
-					self.state, person = self.evalPredictions()
+					state, self.recognizedPerson = self.evalPredictions()
+					print('STATE: 2 -> ' + str(state))
+					self.state = state
 				elif self.state == 3:
-					self.state = 4
+					#Recognized check for message
+					#self.recognizedPerson deletion
+
+
+					print('STATE: 3 -> 10')
+					self.state = 10
+				elif self.state == 4:
+					# check for voice
+					self.state = 11
+				elif self.state == 5:
+					#wait for answer
+					self.state = 11
+				elif self.state == 10:
+					#access granted check w/wo message
+					if self.textPanel['text'] == '':
+						self.textPanel['text'] = 'Access Granted'
+						self.textPanel['font'] = self.subHeaderFont
+						self.textPanel['fg'] = '#26C281'
+						self.textPanel.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
+
+					time.sleep(9)
+					self.textPanel['text'] = ''
+					self.textPanel.pack_forget()
+
+					print('STATE: 10 -> 0')
+					self.state = 0
 				else:
 					print(212)
 					time.sleep(5)
@@ -160,28 +198,9 @@ class MainView:
 	def ring(self):
 		self.state = 1
 		self.button.pack_forget()
+		self.buttonPacked = False
 		self.initVideo()
-
-		# recognized = self.recognizer.recognize(self.frame)
-		# #self.button.configure(text="red", background = "red")
-
-		# if len(recognized) > 0:
-		# 	recognized_id, prediction = recognized[0]
-
-		# 	if not recognized_id == None:
-		# 		self.videoText = self.recognizer.people[recognized_id]
-		# else:
-		# 	self.videoText = "I don't know you!"
-		
-		# #self.showVideo = not self.showVideo
-	
-		# self.button.pack_forget()
-		# self.panel.pack_forget()
-		# time.sleep(2)
-		# self.panel.pack()
-		# self.button.pack()
-
-		# print('Ringed the bell!')
+		print('INFO: Ringed the bell!')
 
 	def onClose(self):
 		print("INFO: Closing")
@@ -200,9 +219,17 @@ class MainView:
 
 		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/2, (self.frame.shape[1],self.frame.shape[0]))
 
-	def evalPredictions(self, picthreshold=100, voicethreshold=85):
+	def evalPredictions(self, picthreshold=75, voicethreshold=90):
+		picMul = 0.5
+		voiceMul = 0.68
 		scoresPic = {}
 		scoresVoice = {}
+
+		state = -1
+		person = -1
+		numInstance = len(self.predictions)
+		picMul = int(picMul*numInstance)
+		voiceMul = int(voiceMul*numInstance)
 
 		for ps in self.predictions:
 			for p in ps:
@@ -217,18 +244,25 @@ class MainView:
 					else:
 						scoresVoice[p[0]] += 1
 
+		self.predictions = []
+
 		if len(scoresPic) == 0 and len(scoresVoice) == 0:
-			return -1, 0
+			state = 8
+			return state, person
 
 		maxIndex = scoresPic.values().index(max(scoresPic.values()))
-		print(maxIndex)
 		maxID = scoresPic.keys()[maxIndex]
-		#candidate = 
 
-		sns.send_push(body= self.recognizer.people[maxID] + ' at the door.',
-						device_id = 'ba0db49ca4b9aa492e8bef9248b91e5a71fec98610e91d58d23575db89b74fbe', access_key_id="AKIAIINNC2NLNUSC7PNA", secret_access_key="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")
-					
-		print(scoresVoice)
-		return 3,0
+		person = maxID
+		if len(scoresPic) >= picMul:
+			state = 3
+		elif (len(scoresPic) + len(scoresVoice)) >= voiceMul:
+			state = 4
+		else:
+			person = -1
+			state = 5
+
+		#sns.send_push(body= self.recognizer.people[maxID] + ' at the door.', device_id = 'ba0db49ca4b9aa492e8bef9248b91e5a71fec98610e91d58d23575db89b74fbe', access_key_id="AKIAIINNC2NLNUSC7PNA", secret_access_key="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")
+		return state, person
 
 
