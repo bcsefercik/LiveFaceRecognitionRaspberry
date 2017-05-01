@@ -219,7 +219,7 @@ class MainView:
 
 		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/2, (self.frame.shape[1],self.frame.shape[0]))
 
-	def evalPredictions(self, picthreshold=75, voicethreshold=90):
+	def evalPredictions(self, picthreshold=80, voicethreshold=90):
 		picMul = 0.5
 		voiceMul = 0.68
 		scoresPic = {}
@@ -252,11 +252,11 @@ class MainView:
 
 		maxIndex = scoresPic.values().index(max(scoresPic.values()))
 		maxID = scoresPic.keys()[maxIndex]
-
+                
 		person = maxID
-		if len(scoresPic) >= picMul:
+		if scoresPic[person] >= picMul:
 			state = 3
-		elif (len(scoresPic) + len(scoresVoice)) >= voiceMul:
+		elif (scoresPic[person] + scoresVoice[person]) >= voiceMul:
 			state = 4
 		else:
 			person = -1
