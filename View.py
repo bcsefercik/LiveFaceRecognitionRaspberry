@@ -181,7 +181,7 @@ class MainView:
 		# print('Ringed the bell!')
 
 	def onClose(self):
-		print("[INFO] Closing")
+		print("INFO: Closing")
 		self.stopVideoLoop.set()
 		self.vs.stop()
 		#self.root.destroy()
@@ -197,13 +197,26 @@ class MainView:
 
 		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/2, (self.frame.shape[1],self.frame.shape[0]))
 
-	def evalPredictions(self, picthreshold=75, voicethreshold=90):
-		scores = {}
+	def evalPredictions(self, picthreshold=75, voicethreshold=85):
+		scoresPic = {}
+		scoresVoice = {}
 
 		for ps in self.predictions:
 			for p in ps:
-				print(p[0])
+				if p[1] < picthreshold:
+					if not p[0] in scoresPic.keys():
+						scoresPic[p[0]] = 1
+					else:
+						scoresPic[p[0]] += 1
+				elif p[1] < voicethreshold:
+					if not p[0] in scoresPic.keys():
+						scoresVoice[p[0]] = 1
+					else:
+						scoresVoice[p[0]] += 1
 
+		scoresPic[5] = 4
+		print(scoresPic.values().index(max(scoresPic.values())))
+		print(scoresVoice)
 		return 3,0
 
 
