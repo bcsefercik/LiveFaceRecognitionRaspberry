@@ -9,6 +9,7 @@ import cv2
 import os
 import subprocess
 import boto3
+import bcssns as sns
 
 
 class MainView:
@@ -147,6 +148,8 @@ class MainView:
 					self.textPanel['text'] = ''
 					self.textPanel.pack_forget()
 					self.state, person = self.evalPredictions()
+				elif self.state == 3:
+					self.state = 4
 				else:
 					print(212)
 					time.sleep(5)
@@ -209,13 +212,20 @@ class MainView:
 					else:
 						scoresPic[p[0]] += 1
 				elif p[1] < voicethreshold:
-					if not p[0] in scoresPic.keys():
+					if not p[0] in scoresVoice.keys():
 						scoresVoice[p[0]] = 1
 					else:
 						scoresVoice[p[0]] += 1
 
-		scoresPic[5] = 4
-		print(scoresPic.values().index(max(scoresPic.values())))
+
+		maxIndex = scoresPic.values().index(max(scoresPic.values()))
+		print(maxIndex)
+		maxID = scoresPic.keys()[maxIndex]
+		#candidate = 
+
+		sns.send_push(body= self.recognizer.people[maxID] + ' at the door.',
+						device_id = 'ba0db49ca4b9aa492e8bef9248b91e5a71fec98610e91d58d23575db89b74fbe', access_key_id="AKIAJ6BGSK6CLPN4B2XQ", secret_access_key="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")
+					
 		print(scoresVoice)
 		return 3,0
 
