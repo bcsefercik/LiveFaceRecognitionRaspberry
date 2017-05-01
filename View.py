@@ -200,7 +200,7 @@ class MainView:
 
 		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/2, (self.frame.shape[1],self.frame.shape[0]))
 
-	def evalPredictions(self, picthreshold=75, voicethreshold=85):
+	def evalPredictions(self, picthreshold=100, voicethreshold=85):
 		scoresPic = {}
 		scoresVoice = {}
 
@@ -217,6 +217,8 @@ class MainView:
 					else:
 						scoresVoice[p[0]] += 1
 
+		if len(scoresPic) == 0 and len(scoresVoice) == 0:
+			return -1, 0
 
 		maxIndex = scoresPic.values().index(max(scoresPic.values()))
 		print(maxIndex)
@@ -224,7 +226,7 @@ class MainView:
 		#candidate = 
 
 		sns.send_push(body= self.recognizer.people[maxID] + ' at the door.',
-						device_id = 'ba0db49ca4b9aa492e8bef9248b91e5a71fec98610e91d58d23575db89b74fbe', access_key_id="AKIAJ6BGSK6CLPN4B2XQ", secret_access_key="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")
+						device_id = 'ba0db49ca4b9aa492e8bef9248b91e5a71fec98610e91d58d23575db89b74fbe', access_key_id="AKIAIINNC2NLNUSC7PNA", secret_access_key="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")
 					
 		print(scoresVoice)
 		return 3,0
