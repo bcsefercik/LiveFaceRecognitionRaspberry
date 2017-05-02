@@ -149,7 +149,7 @@ class MainView:
 
 					data = open('output.mp4', 'rb')
 					self.videoS3Name = str(int(round(time.time() * 1000)))
-					self.s3.Bucket('hoosthere-bucket').put_object(Key=self.videoS3Name + '.mp4', Body=data, ACL='public-read')
+					self.s3.Bucket('hoo-bucket').put_object(Key=self.videoS3Name + '.mp4', Body=data, ACL='public-read')
 					data = None
 					print('INFO: Video uploaded.')
 					print('INFO: Video ID: ' + self.videoS3Name)
@@ -262,7 +262,7 @@ class MainView:
 			person = -1
 			state = 5
 
-		sns.send_push(body= self.recognizer.people[maxID] + ' at the door.', device_id = 'ba0db49ca4b9aa492e8bef9248b91e5a71fec98610e91d58d23575db89b74fbe', access_key_id="AKIAIINNC2NLNUSC7PNA", secret_access_key="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")
+		sns.send_push(body= self.recognizer.people[maxID] + ' at the door.', device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
 		return state, person
 
 

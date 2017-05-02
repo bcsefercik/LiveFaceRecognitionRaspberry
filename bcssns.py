@@ -5,18 +5,16 @@ import pprint
 import re
 import json
 
-def send_push(body, access_key_id, secret_access_key, device_id):
-    region = [r for r in boto.sns.regions() if r.name==u'us-west-1'][0]
+def send_push(body, device_id):
+    region = [r for r in boto.sns.regions() if r.name==u'eu-central-1'][0]
 
     sns = boto.sns.SNSConnection(
-        aws_access_key_id=access_key_id,
-        aws_secret_access_key=secret_access_key,
         region=region,
     )   
     
     try:
         endpoint_response = sns.create_platform_endpoint(
-            platform_application_arn='arn:aws:sns:us-west-1:899067923163:app/APNS_SANDBOX/HoosTRY',
+            platform_application_arn='arn:aws:sns:eu-central-1:727045919079:app/APNS_SANDBOX/Hoo',
             token=device_id,
         )   
         endpoint_arn = endpoint_response['CreatePlatformEndpointResponse']['CreatePlatformEndpointResult']['EndpointArn']
