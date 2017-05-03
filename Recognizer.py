@@ -41,7 +41,7 @@ class Recognizer:
 			return images, np.array(labels)
 
 	def detect_faces(self, img):
-		return self.cascade.detectMultiScale(img, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30), flags = cv2.CASCADE_SCALE_IMAGE)
+		return self.cascade.detectMultiScale(img, scaleFactor=1.3, minNeighbors=5, minSize=(30, 30), flags = cv2.CASCADE_SCALE_IMAGE)
 
 	def save_faces_img(self, prefix, img):
 		faces = self.detect_faces(img)
@@ -92,11 +92,15 @@ class Recognizer:
 		gray = cv2.equalizeHist(gray)
 		return gray
 
+	def detect_cats(self, img):
+		rects = self.catCascade.detectMultiScale(self.to_gray(img), scaleFactor=1.3, minNeighbors=5, minSize=(30, 30))
+		return len(rects), rects
 
-	def __init__(self, modelFile=None, data='data', cascadePath = 'haarcascade_frontalface_default.xml'):
+	def __init__(self, modelFile=None, data='data', cascadePath = 'haarcascade_frontalface_default.xml', catCascadePath = 'haarcascade_frontalcatface.xml'):
 		self.modelFile = modelFile
 		#self.model = cv2.createFisherFaceRecognizer()
 		self.cascade = cv2.CascadeClassifier(cascadePath)
+		self.catCascade = cv2.CascadeClassifier(catCascadePath)
 		self.data = data
 		self.people = {}
 		self.face_checked = 0

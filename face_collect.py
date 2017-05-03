@@ -28,7 +28,7 @@ if not os.path.isdir(path):
 
 def to_gray(img):
 	gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-	gray = cv2.equalizeHist(gray)
+	#gray = cv2.equalizeHist(gray)
 	return gray
 
 
