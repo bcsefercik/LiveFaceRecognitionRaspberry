@@ -2,5 +2,6 @@
 *.avi
 /data/ex/*
 *.pyc
+backend/venv
 *~
 model.mdl
