@@ -50,6 +50,7 @@ class MainView:
 		self.buttonPacked = False
 
 		self.textPanel = tki.Label(self.container, text="Hello, world", font=self.textFont)
+		self.messageText = tki.Text(self.container, font=self.textFont)
 
 		self.stopVideoLoop = threading.Event()
 		self.thread = threading.Thread(target=self.videoLoop, args=())
@@ -203,6 +204,16 @@ class MainView:
 				elif self.state == 3:
 					#Recognized check for message
 					#self.recognizedPerson deletion
+
+					self.messageText['bd'] = 0
+					self.messageText.insert(tki.END, "Denemeeeeeeeee")
+					self.messageText['state'] = tki.DISABLED
+
+					self.messageText.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
+
+					time.sleep(5)
+					self.messageText['state'] = tki.NORMAL
+					self.messageText.delete(1.0, tki.END)
 					self.catDetected = 0
 					self.peopleCount = 0
 					print('STATE: 3 -> 10')
@@ -320,7 +331,7 @@ class MainView:
 
 		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/2, (self.frame.shape[1],self.frame.shape[0]))
 
-	def evalPredictions(self, picthreshold=65, voicethreshold=75):
+	def evalPredictions(self, picthreshold=75, voicethreshold=75):
 		picMul = 0.5
 		voiceMul = 0.68
 		scoresPic = {}

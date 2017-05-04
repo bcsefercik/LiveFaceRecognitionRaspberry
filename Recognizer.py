@@ -41,7 +41,7 @@ class Recognizer:
 			return images, np.array(labels)
 
 	def detect_faces(self, img):
-		return self.cascade.detectMultiScale(img, scaleFactor=1.3, minNeighbors=5, minSize=(30, 30), flags = cv2.CASCADE_SCALE_IMAGE)
+		return self.cascade.detectMultiScale(img, scaleFactor=1.3, minNeighbors=5, minSize=(50, 50), flags = cv2.CASCADE_SCALE_IMAGE)
 
 	def save_faces_img(self, prefix, img):
 		faces = self.detect_faces(img)
@@ -93,7 +93,7 @@ class Recognizer:
 		return gray
 
 	def detect_cats(self, img):
-		rects = self.catCascade.detectMultiScale(self.to_gray(img), scaleFactor=1.3, minNeighbors=5, minSize=(30, 30))
+		rects = self.catCascade.detectMultiScale(self.to_gray(img), scaleFactor=1.3, minNeighbors=15, minSize=(50, 50))
 		return len(rects), rects
 
 	def __init__(self, modelFile=None, data='data', cascadePath = 'haarcascade_frontalface_default.xml', catCascadePath = 'haarcascade_frontalcatface.xml'):
