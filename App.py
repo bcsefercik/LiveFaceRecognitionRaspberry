@@ -1,8 +1,9 @@
 from Recognizer import Recognizer
 from imutils.video import VideoStream
-from View import MainView
+from View import View
 import argparse
 import time
+from Network import Network
 
 #Parse arguments
 ap = argparse.ArgumentParser()
@@ -18,12 +19,13 @@ opt = vars(ap.parse_args())
 
 
 recognizer = Recognizer()
+network = Network(endpoint='http://localhost:8000/hoo/')
 print('INFO: People: ')
 print(recognizer.people)
 
 print("INFO: Launching camera")
 vs = VideoStream(usePiCamera=opt["picamera"] > 0).start()
 time.sleep(2.0)
-view = MainView(vs, recognizer, width=opt["width"], height=opt["height"], framerate=opt["framerate"])
+view = View(vs, recognizer, network, width=opt["width"], height=opt["height"], framerate=opt["framerate"])
 
 view.root.mainloop()

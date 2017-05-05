@@ -64,9 +64,10 @@ class create_visit(APIView):
 		data = json.loads(body_unicode)
 		username = data.get('username', '')
 		video_id = data.get('video_id', '')
+		status = data.get('status', 0)
 
 		resident = Resident.objects.get(username=username)
-		visit = Visit.objects.create(visitor=resident, video_id=video_id)
+		visit = Visit.objects.create(visitor=resident, video_id=video_id, status=status)
 
 		serializer = VisitSerializer(visit)
 		return JsonResponse(serializer.data)

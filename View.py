@@ -11,13 +11,10 @@ import subprocess
 import boto3
 import boto3.session
 import bcssns as sns
-import requests
 
-
-class MainView:
-	def __init__(self, vs, recognizer, width=320, height=450, framerate=32, videoduration=3):
-		self.endpoint = 'http://localhost:8000/hoo/'
-		self.endpoint = 'http://hoo-dev.eu-central-1.elasticbeanstalk.com/hoo/'
+class View:
+	def __init__(self, vs, recognizer, network, width=320, height=450, framerate=32, videoduration=3):
+		self.network = network
 		self.state = 0
 
 		self.session = boto3.session.Session(region_name='eu-central-1')
@@ -176,10 +173,9 @@ class MainView:
 				elif self.state == 2:
 					print('INFO: Uploading video.')
 
-					if self.textPanel['text'] == '':
-						self.textPanel['text'] = u"\u0489" + '\n\nProcessing...'
-						self.textPanel['font'] = self.textFont
-						self.textPanel.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
+					self.textPanel['text'] = u"\u0489" + '\n\nProcessing...'
+					self.textPanel['font'] = self.textFont
+					self.textPanel.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
 
 					data = open('output.mp4', 'rb')
 					self.videoS3Name = str(int(round(time.time() * 1000)))
@@ -190,42 +186,62 @@ class MainView:
 					print('INFO: Predictions: ')
 					print(self.predictions)
 					
-					self.textPanel['text'] = ''
-					self.textPanel.pack_forget()
 					state = 2
 					if self.peopleCount > 0:
 						state, self.recognizedPerson = self.evalPredictions()
-						r = requests.post(self.endpoint + 'create_visit/', json={'username': self.recognizedPerson, 'video_id': self.videoS3Name})
-						print(r)
-						sns.send_push(body= self.recognizedPerson + ' at the door.', device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
-		
 						self.peopleCount = 0
 					else:
 						state = 14
 
 					self.peopleCount = 0
 					self.catDetected = 0
+
+					self.textPanel['text'] = ''
+					self.textPanel.pack_forget()
 					print('STATE: 2 -> ' + str(state))
 					self.state = state
 				elif self.state == 3:
 					#Recognized check for message
 					#self.recognizedPerson deletion
 
-					self.state = 10
-					self.messageText['bd'] = 0
-					self.messageText.insert(tki.END, "Denemeeeeeeeee")
-					self.messageText['state'] = tki.DISABLED
+					if self.textPanel['text'] == '':
+						self.textPanel['text'] = u"\u0489" + '\n\nProcessing...'
+						self.textPanel['font'] = self.textFont
+						self.textPanel.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
 
-					self.messageText.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
+					r = self.network.create_visit(self.recognizedPerson, self.videoS3Name, status=1)
+					print('INFO: Posting visit to server. Result: '+str(r))
+					print('INFO: Notification sent.')
+					sns.send_push(body= self.recognizedPerson + ' has granted access via face recognition system.', device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
+					sns.send_push(body= self.recognizedPerson + ' has granted access via face recognition system.', device_id = '119c70f2e039960b82a9a6b74eb6db172420e0e3445c579675400abd19c08545')
 
-					time.sleep(5)
-					self.messageText['state'] = tki.NORMAL
-					self.messageText.delete(1.0, tki.END)
-					self.messageText.pack_forget()
+					#access granted check w/wo message.
+					self.textPanel['text'] = 'Access Granted'
+					self.textPanel['font'] = self.subHeaderFont
+					self.textPanel['fg'] = '#26C281'
+					self.textPanel.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
+
+					message = self.network.get_message(self.recognizedPerson)
+
+					if message != None:
+						self.messageText['bd'] = 0
+						self.messageText.insert(tki.END, "There is a message for you:\n\n" + message)
+						self.messageText['state'] = tki.DISABLED
+						self.messageText.tag_configure("center", justify='center')
+						self.messageText.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
+
+					time.sleep(15)
+
+					self.textPanel['text'] = ''
+					self.textPanel.pack_forget()
+					if message != None:
+						self.messageText['state'] = tki.NORMAL
+						self.messageText.delete(1.0, tki.END)
+						self.messageText.pack_forget()
 					self.catDetected = 0
 					self.peopleCount = 0
-					print('STATE: 3 -> 10')
-					self.state = 10
+					print('STATE: 3 -> 0')
+					self.state = 0
 				elif self.state == 4:
 					# check for voice
 					self.state = 11
@@ -295,7 +311,9 @@ class MainView:
 					time.sleep(self.sleepduration)
 				elif self.state == 14:
 					#access granted check w/wo message
+					self.network.create_visit('cat', self.videoS3Name)
 					sns.send_push(body= 'Cat is home.', device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
+					sns.send_push(body= 'Cat is home.', device_id = '119c70f2e039960b82a9a6b74eb6db172420e0e3445c579675400abd19c08545')
 					if self.textPanel['text'] == '':
 						self.textPanel['text'] = 'Cat\nAccess\nGranted'
 						self.textPanel['font'] = self.subHeaderFont
