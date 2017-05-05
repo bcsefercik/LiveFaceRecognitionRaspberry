@@ -10,15 +10,15 @@ class ResidentSerializer(serializers.ModelSerializer):
 
 class VisitSerializer(serializers.ModelSerializer):
 	visitor = ResidentSerializer(many=False, read_only=True)
-	date = serializers.DateTimeField(format="%m %d, %Y %H:%M")
+	date = serializers.DateTimeField(format="%B %d, %Y %H:%M")
 
 	class Meta:
 		model = Visit
-		fields = ('id', 'status', 'date', 'visitor')
+		fields = ('id', 'status', 'date', 'visitor', 'video_id')
 
 
 class MessageSerializer(serializers.ModelSerializer):
-	date = serializers.DateTimeField(format="%m %d, %Y %H:%M")
+	date = serializers.DateTimeField(format="%B %d, %Y %H:%M")
 	target = ResidentSerializer(many=False, read_only=True)
 
 	class Meta:

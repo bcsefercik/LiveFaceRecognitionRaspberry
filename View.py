@@ -11,11 +11,13 @@ import subprocess
 import boto3
 import boto3.session
 import bcssns as sns
+import requests
 
 
 class MainView:
 	def __init__(self, vs, recognizer, width=320, height=450, framerate=32, videoduration=3):
-
+		self.endpoint = 'http://localhost:8000/hoo/'
+		self.endpoint = 'http://hoo-dev.eu-central-1.elasticbeanstalk.com/hoo/'
 		self.state = 0
 
 		self.session = boto3.session.Session(region_name='eu-central-1')
@@ -193,6 +195,10 @@ class MainView:
 					state = 2
 					if self.peopleCount > 0:
 						state, self.recognizedPerson = self.evalPredictions()
+						r = requests.post(self.endpoint + 'create_visit/', json={'username': self.recognizedPerson, 'video_id': self.videoS3Name})
+						print(r)
+						sns.send_push(body= self.recognizedPerson + ' at the door.', device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
+		
 						self.peopleCount = 0
 					else:
 						state = 14
@@ -214,6 +220,7 @@ class MainView:
 					time.sleep(5)
 					self.messageText['state'] = tki.NORMAL
 					self.messageText.delete(1.0, tki.END)
+					self.messageText.pack_forget()
 					self.catDetected = 0
 					self.peopleCount = 0
 					print('STATE: 3 -> 10')
@@ -331,7 +338,7 @@ class MainView:
 
 		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/2, (self.frame.shape[1],self.frame.shape[0]))
 
-	def evalPredictions(self, picthreshold=75, voicethreshold=75):
+	def evalPredictions(self, picthreshold=100, voicethreshold=75):
 		picMul = 0.5
 		voiceMul = 0.68
 		scoresPic = {}
@@ -374,6 +381,5 @@ class MainView:
 			person = -1
 			state = 5
 
-		sns.send_push(body= self.recognizer.people[maxID] + ' at the door.', device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
-		return state, person
+		return state, self.recognizer.people[person]
 

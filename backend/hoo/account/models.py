@@ -19,6 +19,10 @@ class Visit(models.Model):
 	visitor = models.ForeignKey(Resident, related_name = "visits", blank=False)
 	date = models.DateTimeField(auto_now_add=True)
 	status = models.IntegerField(default=0)
+	video_id = models.CharField(blank=True, max_length=255)
+
+	def __str__(self):
+		return str(self.date)
 
 
 class Message(models.Model):
