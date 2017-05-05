@@ -211,6 +211,7 @@ class MainView:
 					#Recognized check for message
 					#self.recognizedPerson deletion
 
+					self.state = 10
 					self.messageText['bd'] = 0
 					self.messageText.insert(tki.END, "Denemeeeeeeeee")
 					self.messageText['state'] = tki.DISABLED
