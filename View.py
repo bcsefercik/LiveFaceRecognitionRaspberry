@@ -40,12 +40,12 @@ class View:
 
 		self.framerate = framerate
 		self.sleepduration = 1.0/self.framerate
-		self.idleduration = 13*framerate
+		self.idleduration = 10*framerate
 		self.idle = 0
 
 		self.headerFont = tkFont.Font(family='Helvetica', size=130, weight='bold')
 		self.subHeaderFont = tkFont.Font(family='Helvetica', size=22, weight='bold')
-		self.textFont = tkFont.Font(family='Helvetica', size=18, weight='normal')
+		self.textFont = tkFont.Font(family='Helvetica', size=13, weight='normal')
 
 		self.button = tki.Button(text=u"\u266C", command=self.ring, font=self.headerFont)
 		self.buttonPacked = False
@@ -152,7 +152,7 @@ class View:
 					if self.videoRecord == 0 and len(faces) == 0:
 						self.idle -= 1
 						if self.idle%10 == 0:
-							print('INFO: Idle' + str(self.idle))
+							print('INFO: Idle ' + str(self.idle))
 						if self.idle <= 0:
 							self.state = 0
 							self.panel.pack_forget()
@@ -301,7 +301,7 @@ class View:
 
 					self.idle -= 1
 					if self.idle%10 == 0:
-						print('INFO: Idle' + str(self.idle))
+						print('INFO: Idle ' + str(self.idle))
 					if self.idle <= 0:
 						self.textPanel['text'] = 'No Response'
 						time.sleep(5)
