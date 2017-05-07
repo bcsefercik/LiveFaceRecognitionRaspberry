@@ -40,7 +40,7 @@ class View:
 
 		self.framerate = framerate
 		self.sleepduration = 1.0/self.framerate
-		self.idleduration = 26*framerate
+		self.idleduration = 13*framerate
 		self.idle = 0
 
 		self.headerFont = tkFont.Font(family='Helvetica', size=130, weight='bold')
@@ -317,7 +317,7 @@ class View:
 						self.textPanel['font'] = self.subHeaderFont
 						self.textPanel['fg'] = '#D91E18'
 
-					if not status == 0:
+					if (status is not None) and (not status == 0):
 						time.sleep(5)
 						self.textPanel['text'] = ''
 						self.textPanel.pack_forget()
@@ -436,7 +436,7 @@ class View:
 
 		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/2, (self.frame.shape[1],self.frame.shape[0]))
 
-	def evalPredictions(self, picthreshold=65, voicethreshold=25):
+	def evalPredictions(self, picthreshold=75, voicethreshold=25):
 		picMul = 0.68
 		voiceMul = 0.5
 		scoresPic = {}
