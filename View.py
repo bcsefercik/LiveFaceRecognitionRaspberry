@@ -490,6 +490,9 @@ class View:
 			else:
 				person = -1
 				state = 5
-
+		
+		if person == -1:
+			return state, None
+		
 		return state, self.recognizer.people[person]
 
