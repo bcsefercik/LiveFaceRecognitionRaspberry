@@ -151,6 +151,8 @@ class View:
 
 					if self.videoRecord == 0 and len(faces) == 0:
 						self.idle -= 1
+						if self.idle%10 == 0:
+							print('INFO: Idle' + str(self.idle))
 						if self.idle <= 0:
 							self.state = 0
 							self.panel.pack_forget()
@@ -298,6 +300,8 @@ class View:
 						self.messageText.pack_forget()
 
 					self.idle -= 1
+					if self.idle%10 == 0:
+						print('INFO: Idle' + str(self.idle))
 					if self.idle <= 0:
 						self.textPanel['text'] = 'No Response'
 						time.sleep(5)
@@ -434,7 +438,7 @@ class View:
 		except OSError:
 			pass
 
-		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/3, (self.frame.shape[1],self.frame.shape[0]))
+		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/6, (self.frame.shape[1],self.frame.shape[0]))
 
 	def evalPredictions(self, picthreshold=75, voicethreshold=25):
 		picMul = 0.68
