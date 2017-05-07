@@ -94,20 +94,6 @@ class visit_by_id(APIView):
 		serializer = VisitSerializer(visit)
 		return JsonResponse(serializer.data)
 
-	def post(self, request, *args, **kwargs):
-		body_unicode = request.body.decode('utf-8')
-		data = json.loads(body_unicode)
-
-		id = data.get("id", 0)
-		status = data.get("status", 0)
-
-		visit = Visit.objects.get(id=id)
-		visit.status = status
-		visit.save()
-		return JsonResponse({"result": "success"})
-
-
-
 
 class visit_list(ListAPIView):
 	serializer_class = VisitSerializer
@@ -162,7 +148,18 @@ class create_message(APIView):
 		else:
 			return JsonResponse({"result": "empty"})
 
+class update_message(APIView):
 
+	def post(self, request, *args, **kwargs):
+		body_unicode = request.body.decode('utf-8')
+		data = json.loads(body_unicode)
+		id = data.get("id", 0)
+		status = data.get("status", 1)
+
+		message = Message.objects.get(id=id)
+		message.status = status
+		message.save()
+		return JsonResponse({"result": "success"})
 
 
 

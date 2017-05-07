@@ -10,6 +10,7 @@ urlpatterns = [
     url(r'^all_residents/', views.resident_list.as_view(), name='resident_list'),
     url(r'^update_visit/', views.update_visit.as_view(), name='update_visit'),
     url(r'^create_message/', views.create_message.as_view(), name='create_message'),
+    url(r'^update_message/', views.update_message.as_view(), name='update_message'),
     url(r'^visit_by_id/', views.visit_by_id.as_view(), name='visit_by_id'),
 
 

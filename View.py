@@ -40,6 +40,8 @@ class View:
 
 		self.framerate = framerate
 		self.sleepduration = 1.0/self.framerate
+		self.idleduration = 26*framerate
+		self.idle = 0
 
 		self.headerFont = tkFont.Font(family='Helvetica', size=130, weight='bold')
 		self.subHeaderFont = tkFont.Font(family='Helvetica', size=26, weight='bold')
@@ -72,6 +74,9 @@ class View:
 
 		self.recognizedPerson = -1
 		self.catDetected = 0
+
+		self.visitID = 0
+
 	def videoLoop(self):
 		try:
 			while (not self.stopVideoLoop.is_set()):
@@ -143,6 +148,19 @@ class View:
 						self.panel.configure(image=image)
 						self.panel.image = image
 
+
+					if self.videoRecord == 0 and len(faces) == 0:
+						self.idle -= 1
+						if self.idle <= 0:
+							self.state = 0
+							self.panel.pack_forget()
+							self.panel = None
+							self.textPanel.pack_forget()
+							self.buttonPacked = False
+							print('INFO: Nobody is here.')
+							print('STATE: 1 -> 0')
+
+
 					if self.videoRecord != 0 and self.videoRecord%5 == 0 and self.peopleCount > 0:
 						self.predictions.append(self.recognizer.recognize(self.frame))
 						print('INFO: Calling recognize()')
@@ -212,8 +230,9 @@ class View:
 					r = self.network.create_visit(self.recognizedPerson, self.videoS3Name, status=1)
 					print('INFO: Posting visit to server. Result: '+str(r))
 					print('INFO: Notification sent.')
-					sns.send_push(body= self.recognizedPerson + ' has granted access via face recognition system.', device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
-					sns.send_push(body= self.recognizedPerson + ' has granted access via face recognition system.', device_id = '119c70f2e039960b82a9a6b74eb6db172420e0e3445c579675400abd19c08545')
+					residentName = self.network.get_resident_name(self.recognizedPerson)
+					sns.send_push(body= residentName + ' has granted access via face recognition system.', device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
+					sns.send_push(body= residentName + ' has granted access via face recognition system.', device_id = '119c70f2e039960b82a9a6b74eb6db172420e0e3445c579675400abd19c08545')
 
 					#access granted check w/wo message.
 					self.textPanel['text'] = 'Access Granted'
@@ -221,17 +240,18 @@ class View:
 					self.textPanel['fg'] = '#26C281'
 					self.textPanel.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
 
-					message = self.network.get_message(self.recognizedPerson)
+					message_id, message = self.network.get_message(self.recognizedPerson)
 
 					if message != None:
+						self.network.update_message(message_id)
 						self.messageText['bd'] = 0
 						self.messageText.insert(tki.END, "There is a message for you:\n\n" + message)
 						self.messageText['state'] = tki.DISABLED
 						self.messageText.tag_configure("center", justify='center')
 						self.messageText.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
+						time.sleep(8)
 
-					time.sleep(15)
-
+					time.sleep(5)
 					self.textPanel['text'] = ''
 					self.textPanel.pack_forget()
 					if message != None:
@@ -246,8 +266,64 @@ class View:
 					# check for voice
 					self.state = 11
 				elif self.state == 5:
-					#wait for answer
-					self.state = 11
+					self.textPanel['text'] = ''
+					self.idle = self.idleduration*3
+					self.textPanel.pack_forget()
+					sns.send_push(body= 'There is someone at your door.', device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
+					sns.send_push(body= 'There is someone at your door.', device_id = '119c70f2e039960b82a9a6b74eb6db172420e0e3445c579675400abd19c08545')
+					self.visitID = self.network.create_visit(self.recognizedPerson, self.videoS3Name)
+
+					print('INFO: Visit created.')
+					print('STATE: 5 -> 6')
+					self.state = 6
+				elif self.state == 6:
+					if self.textPanel['text'] == '':
+						self.textPanel['text'] = 'Waiting for Response'
+						self.textPanel['font'] = self.subHeaderFont
+						self.textPanel['fg'] = '#000000'
+						self.textPanel.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
+
+					message_id, message = self.network.get_message(self.recognizedPerson)
+
+					if message != None:
+						self.network.update_message(message_id)
+						self.messageText['bd'] = 0
+						self.messageText.insert(tki.END, "There is a message for you:\n\n" + message)
+						self.messageText['state'] = tki.DISABLED
+						self.messageText.tag_configure("center", justify='center')
+						self.messageText.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
+						time.sleep(13)
+						self.messageText['state'] = tki.NORMAL
+						self.messageText.delete(1.0, tki.END)
+						self.messageText.pack_forget()
+
+					self.idle -= 1
+					if self.idle <= 0:
+						self.textPanel['text'] = 'No Response'
+						time.sleep(5)
+						print('INFO: No response from owner')
+						print('STATE: 6 -> 0')
+						self.state = 0
+
+					status = self.network.visit_status(self.visitID)
+					if status == 1:
+						self.textPanel['text'] = 'Access Granted'
+						self.textPanel['font'] = self.subHeaderFont
+						self.textPanel['fg'] = '#26C281'
+					elif status == -1:
+						self.textPanel['text'] = 'Access Rejected'
+						self.textPanel['font'] = self.subHeaderFont
+						self.textPanel['fg'] = '#D91E18'
+
+					if not status == 0:
+						time.sleep(5)
+						self.textPanel['text'] = ''
+						self.textPanel.pack_forget()
+						print('STATE: 6 -> 0')
+						self.state = 0
+					else:
+						time.sleep(self.sleepduration*13)
+
 				elif self.state == 10:
 					#access granted check w/wo message
 					if self.textPanel['text'] == '':
@@ -311,7 +387,7 @@ class View:
 					time.sleep(self.sleepduration)
 				elif self.state == 14:
 					#access granted check w/wo message
-					self.network.create_visit('cat', self.videoS3Name)
+					self.network.create_visit('cat', self.videoS3Name, status=1)
 					sns.send_push(body= 'Cat is home.', device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
 					sns.send_push(body= 'Cat is home.', device_id = '119c70f2e039960b82a9a6b74eb6db172420e0e3445c579675400abd19c08545')
 					if self.textPanel['text'] == '':
@@ -335,6 +411,7 @@ class View:
 
 	def ring(self):
 		self.state = 1
+		self.idle = self.idleduration
 		self.button.pack_forget()
 		self.buttonPacked = False
 		self.initVideo()
@@ -357,7 +434,7 @@ class View:
 
 		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/2, (self.frame.shape[1],self.frame.shape[0]))
 
-	def evalPredictions(self, picthreshold=100, voicethreshold=75):
+	def evalPredictions(self, picthreshold=25, voicethreshold=25):
 		picMul = 0.5
 		voiceMul = 0.68
 		scoresPic = {}
@@ -385,8 +462,9 @@ class View:
 		self.predictions = []
 
 		if len(scoresPic) == 0 and len(scoresVoice) == 0:
-			state = 8
-			return state, person
+			print('INFO: Unauthorized visitor.')
+			state = 5
+			return state, 'unknown'
 
 		maxIndex = scoresPic.values().index(max(scoresPic.values()))
 		maxID = scoresPic.keys()[maxIndex]
