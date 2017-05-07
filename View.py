@@ -437,8 +437,8 @@ class View:
 		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/2, (self.frame.shape[1],self.frame.shape[0]))
 
 	def evalPredictions(self, picthreshold=65, voicethreshold=25):
-		picMul = 0.5
-		voiceMul = 0.68
+		picMul = 0.68
+		voiceMul = 0.5
 		scoresPic = {}
 		scoresVoice = {}
 
@@ -468,17 +468,28 @@ class View:
 			state = 5
 			return state, 'unknown'
 
-		maxIndex = scoresPic.values().index(max(scoresPic.values()))
-		maxID = scoresPic.keys()[maxIndex]
+		maxID = -1
+		if len(scoresPic) > 0:
+			maxIndex = scoresPic.values().index(max(scoresPic.values()))
+			maxID = scoresPic.keys()[maxIndex]
+		elif len(scoresVoice) > 0:
+			maxIndex = scoresPic.values().index(max(scoresPic.values()))
+			maxID = scoresPic.keys()[maxIndex]
                 
 		person = maxID
-		if scoresPic[person] >= picMul:
+		if (person in scoresPic.keys()) and  (scoresPic[person] >= picMul):
 			state = 3
-		elif (scoresPic[person] + scoresVoice[person]) >= voiceMul:
-			state = 4
 		else:
-			person = -1
-			state = 5
+			tot = 0
+			if (person in scoresPic.keys()):
+				tot += scoresPic[person]
+			if (person in scoresVoice.keys()):
+				tot += scoresVoice[person]
+			if tot >= voiceMul:
+				state = 4
+			else:
+				person = -1
+				state = 5
 
 		return state, self.recognizer.people[person]
 
