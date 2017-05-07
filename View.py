@@ -301,6 +301,8 @@ class View:
 					if self.idle <= 0:
 						self.textPanel['text'] = 'No Response'
 						time.sleep(5)
+						self.textPanel['text'] = ''
+						self.textPanel.pack_forget()
 						print('INFO: No response from owner')
 						print('STATE: 6 -> 0')
 						self.state = 0

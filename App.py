@@ -19,7 +19,8 @@ opt = vars(ap.parse_args())
 
 
 recognizer = Recognizer()
-network = Network(endpoint='http://localhost:8000/hoo/')
+network = Network()
+#network = Network(endpoint='http://localhost:8000/hoo/')
 print('INFO: People: ')
 print(recognizer.people)
 
