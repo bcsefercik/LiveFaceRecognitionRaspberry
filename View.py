@@ -434,7 +434,7 @@ class View:
 		except OSError:
 			pass
 
-		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate, (self.frame.shape[1],self.frame.shape[0]))
+		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/3, (self.frame.shape[1],self.frame.shape[0]))
 
 	def evalPredictions(self, picthreshold=75, voicethreshold=25):
 		picMul = 0.68
