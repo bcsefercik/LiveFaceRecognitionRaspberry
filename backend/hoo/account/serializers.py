@@ -5,12 +5,12 @@ class ResidentSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Resident
-		fields = ('username', 'name', 'microsoft_id', 'video_id', 'photo_id')
+		fields = ('id', 'username', 'name', 'microsoft_id', 'video_id', 'photo_id')
 
 
 class VisitSerializer(serializers.ModelSerializer):
 	visitor = ResidentSerializer(many=False, read_only=True)
-	date = serializers.DateTimeField(format="%B %d, %Y %H:%M")
+	date = serializers.DateTimeField(format="%H:%M %B %d, %Y")
 
 	class Meta:
 		model = Visit
@@ -18,8 +18,8 @@ class VisitSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
-	date = serializers.DateTimeField(format="%B %d, %Y %H:%M")
 	target = ResidentSerializer(many=False, read_only=True)
+	date = serializers.DateTimeField(format="%H:%M %B %d, %Y")
 
 	class Meta:
 		model = Message

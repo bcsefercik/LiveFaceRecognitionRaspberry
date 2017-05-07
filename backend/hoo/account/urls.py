@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'^update_resident/', views.update_resident.as_view(), name='update_resident'),
     url(r'^create_visit/', views.create_visit.as_view(), name='create_visit'),
     url(r'^all_visits/', views.visit_list.as_view(), name='visit_list'),
+    url(r'^all_residents/', views.resident_list.as_view(), name='resident_list'),
     url(r'^update_visit/', views.update_visit.as_view(), name='update_visit'),
     url(r'^create_message/', views.create_message.as_view(), name='create_message'),
     url(r'^visit_by_id/', views.visit_by_id.as_view(), name='visit_by_id'),

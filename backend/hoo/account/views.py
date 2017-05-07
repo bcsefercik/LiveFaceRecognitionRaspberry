@@ -114,6 +114,12 @@ class visit_list(ListAPIView):
 
 	def get_queryset(self):
 		return Visit.objects.all().order_by("-id")
+
+class resident_list(ListAPIView):
+	serializer_class = ResidentSerializer
+
+	def get_queryset(self):
+		return Resident.objects.all().order_by("name")
 		
 
 class update_visit(APIView):
@@ -136,7 +142,7 @@ class create_message(APIView):
 		data = json.loads(body_unicode)
 
 		message = data.get("message", '')
-		target_username = date.get("target_username", '')
+		target_username = data.get("target_username", '')
 
 		target = Resident.objects.get(username=target_username)
 		message = Message.objects.create(message=message, target=target)
