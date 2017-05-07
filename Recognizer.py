@@ -93,7 +93,7 @@ class Recognizer:
 		return gray
 
 	def detect_cats(self, img):
-		rects = self.catCascade.detectMultiScale(self.to_gray(img), scaleFactor=1.3, minNeighbors=15, minSize=(50, 50))
+		rects = self.catCascade.detectMultiScale(self.to_gray(img), scaleFactor=1.3, minNeighbors=10, minSize=(50, 50))
 		return len(rects), rects
 
 	def __init__(self, modelFile=None, data='data', cascadePath = 'haarcascade_frontalface_default.xml', catCascadePath = 'haarcascade_frontalcatface.xml'):
