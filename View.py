@@ -44,7 +44,7 @@ class View:
 		self.idle = 0
 
 		self.headerFont = tkFont.Font(family='Helvetica', size=130, weight='bold')
-		self.subHeaderFont = tkFont.Font(family='Helvetica', size=26, weight='bold')
+		self.subHeaderFont = tkFont.Font(family='Helvetica', size=22, weight='bold')
 		self.textFont = tkFont.Font(family='Helvetica', size=18, weight='normal')
 
 		self.button = tki.Button(text=u"\u266C", command=self.ring, font=self.headerFont)
@@ -278,7 +278,7 @@ class View:
 					self.state = 6
 				elif self.state == 6:
 					if self.textPanel['text'] == '':
-						self.textPanel['text'] = 'Waiting for Response'
+						self.textPanel['text'] = 'Waiting\nfor\nResponse'
 						self.textPanel['font'] = self.subHeaderFont
 						self.textPanel['fg'] = '#000000'
 						self.textPanel.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
@@ -436,7 +436,7 @@ class View:
 
 		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/2, (self.frame.shape[1],self.frame.shape[0]))
 
-	def evalPredictions(self, picthreshold=25, voicethreshold=25):
+	def evalPredictions(self, picthreshold=65, voicethreshold=25):
 		picMul = 0.5
 		voiceMul = 0.68
 		scoresPic = {}
