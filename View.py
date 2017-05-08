@@ -441,7 +441,7 @@ class View:
 
 		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/6, (self.frame.shape[1],self.frame.shape[0]))
 
-	def evalPredictions(self, picthreshold=75, voicethreshold=25):
+	def evalPredictions(self, picthreshold=85, voicethreshold=25):
 		picMul = 0.5
 		voiceMul = 0.68
 		scoresPic = {}
