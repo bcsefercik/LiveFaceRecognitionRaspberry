@@ -266,7 +266,8 @@ class View:
 					self.state = 0
 				elif self.state == 4:
 					# check for voice
-					self.state = 11
+					print('STATE: 4 -> 0')
+					self.state = 0
 				elif self.state == 5:
 					self.textPanel['text'] = ''
 					self.idle = self.idleduration*3
@@ -441,8 +442,8 @@ class View:
 		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/6, (self.frame.shape[1],self.frame.shape[0]))
 
 	def evalPredictions(self, picthreshold=75, voicethreshold=25):
-		picMul = 0.68
-		voiceMul = 0.5
+		picMul = 0.5
+		voiceMul = 0.68
 		scoresPic = {}
 		scoresVoice = {}
 
