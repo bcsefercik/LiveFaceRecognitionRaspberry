@@ -45,7 +45,7 @@ class View:
 		self.idleduration = 5*framerate
 		self.idle = 0
 
-		self.headerFont = tkFont.Font(family='Helvetica', size=130, weight='bold')
+		self.headerFont = tkFont.Font(family='Helvetica', size=124, weight='bold')
 		self.subHeaderFont = tkFont.Font(family='Helvetica', size=22, weight='bold')
 		self.subSHeaderFont = tkFont.Font(family='Helvetica', size=18, weight='bold')
 		self.textFont = tkFont.Font(family='Helvetica', size=13, weight='normal')
