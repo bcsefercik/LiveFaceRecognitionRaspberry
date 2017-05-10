@@ -54,3 +54,13 @@ class Network:
 				return json['name']
 		else:
 			return None
+
+	def microsoft_list(self):
+		req = requests.get(self.endpoint + 'microsoft_list/')
+		l = []
+		if req.status_code == 200:
+			json = req.json()
+			for j in json:
+				l.append(j['microsoft_id'])
+		print(l)
+		return l

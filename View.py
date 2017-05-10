@@ -11,6 +11,8 @@ import subprocess
 import boto3
 import boto3.session
 import bcssns as sns
+import random
+import bkk_sound as sound
 
 class View:
 	def __init__(self, vs, recognizer, network, width=320, height=450, framerate=32, videoduration=3):
@@ -40,11 +42,12 @@ class View:
 
 		self.framerate = framerate
 		self.sleepduration = 1.0/self.framerate
-		self.idleduration = 10*framerate
+		self.idleduration = 5*framerate
 		self.idle = 0
 
 		self.headerFont = tkFont.Font(family='Helvetica', size=130, weight='bold')
 		self.subHeaderFont = tkFont.Font(family='Helvetica', size=22, weight='bold')
+		self.subSHeaderFont = tkFont.Font(family='Helvetica', size=18, weight='bold')
 		self.textFont = tkFont.Font(family='Helvetica', size=13, weight='normal')
 
 		self.button = tki.Button(text=u"\u266C", command=self.ring, font=self.headerFont)
@@ -76,6 +79,10 @@ class View:
 		self.catDetected = 0
 
 		self.visitID = 0
+
+		self.faceAuth = False
+
+		self.testSentences = ['Be the change you wish to see in the world.', 'Don\'t count the days, make the days count!', 'It is not who I am underneath, but what I do that defines me.']
 
 	def videoLoop(self):
 		try:
@@ -229,48 +236,96 @@ class View:
 						self.textPanel['font'] = self.textFont
 						self.textPanel.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
 
-					r = self.network.create_visit(self.recognizedPerson, self.videoS3Name, status=1)
-					print('INFO: Posting visit to server. Result: '+str(r))
-					print('INFO: Notification sent.')
 					residentName = self.network.get_resident_name(self.recognizedPerson)
-					sns.send_push(body= residentName + ' has granted access via face recognition system.', device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
-					sns.send_push(body= residentName + ' has granted access via face recognition system.', device_id = '119c70f2e039960b82a9a6b74eb6db172420e0e3445c579675400abd19c08545')
 
-					#access granted check w/wo message.
-					self.textPanel['text'] = 'Access Granted'
-					self.textPanel['font'] = self.subHeaderFont
-					self.textPanel['fg'] = '#26C281'
-					self.textPanel.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
+					if self.faceAuth:
+						r = self.network.create_visit(self.recognizedPerson, self.videoS3Name, status=1)
+						print('INFO: Posting visit to server. Result: '+str(r))
+						print('INFO: Notification sent.')
+						sns.send_push(body= residentName + ' has granted access via face recognition system.', device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
+						sns.send_push(body= residentName + ' has granted access via face recognition system.', device_id = '119c70f2e039960b82a9a6b74eb6db172420e0e3445c579675400abd19c08545')
 
-					message_id, message = self.network.get_message(self.recognizedPerson)
+						#access granted check w/wo message.
+						self.textPanel['text'] = 'Access Granted'
+						self.textPanel['font'] = self.subHeaderFont
+						self.textPanel['fg'] = '#26C281'
+						self.textPanel.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
 
-					if message != None:
-						self.network.update_message(message_id)
-						self.messageText['bd'] = 0
-						self.messageText.insert(tki.END, "There is a message for you:\n\n" + message)
+						message_id, message = self.network.get_message(self.recognizedPerson)
+
+						if message != None:
+							self.network.update_message(message_id)
+							self.messageText['bd'] = 0
+							self.messageText.insert(tki.END, "There is a message for you:\n\n" + message)
+							self.messageText['state'] = tki.DISABLED
+							self.messageText.tag_configure("center", justify='center')
+							self.messageText.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
+							time.sleep(8)
+
+						time.sleep(5)
+						self.textPanel['text'] = ''
+						self.textPanel.pack_forget()
+						if message != None:
+							self.messageText['state'] = tki.NORMAL
+							self.messageText.delete(1.0, tki.END)
+							self.messageText.pack_forget()
+						self.catDetected = 0
+						self.peopleCount = 0
+						print('STATE: 3 -> 0')
+						self.state = 0
+					else:
+						self.textPanel['text'] = ''
+						self.state = 4
+						print('STATE: 3 -> 4')
+
+				elif self.state == 4:
+					# check for voice
+					self.visitID = self.network.create_visit(self.recognizedPerson, self.videoS3Name, status=0)
+					print('INFO: Posting visit to server.')
+					residentName = self.network.get_resident_name(self.recognizedPerson)
+					print('INFO: Notification sent.')
+					sns.send_push(body= residentName + ' is at the door. Waiting for voice authentication.', device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
+					sns.send_push(body= residentName + ' is at the door. Waiting for voice authentication.', device_id = '119c70f2e039960b82a9a6b74eb6db172420e0e3445c579675400abd19c08545')
+
+					if self.textPanel['text'] == '':
+						self.textPanel['text'] = 'Welcome\n' + residentName +'!\nYou will be\n directed to\n voice recognition.'
+						self.textPanel['font'] = self.subHeaderFont
+						self.textPanel['fg'] = '#000000'
+						self.textPanel.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
+
+					time.sleep(4)
+					self.textPanel['text'] = ''
+					self.textPanel.pack_forget()
+					print('STATE: 4 -> 41')
+					self.state = 41
+				elif self.state == 41:
+					if self.textPanel['text'] == '':
+						self.textPanel['text'] = 'Please read\n the following sentence\n out loud.'
+						self.textPanel.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
+						self.messageText.insert(tki.END, self.testSentences[random.randint(0, len(self.testSentences))-1])
+						self.messageText['font'] = self.subSHeaderFont
 						self.messageText['state'] = tki.DISABLED
 						self.messageText.tag_configure("center", justify='center')
 						self.messageText.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
-						time.sleep(8)
 
-					time.sleep(5)
+
+					ms_list = self.network.microsoft_list()
+
+					print(sound.identify_profile(ms_list))
+
+					time.sleep(6)
+					
 					self.textPanel['text'] = ''
 					self.textPanel.pack_forget()
-					if message != None:
-						self.messageText['state'] = tki.NORMAL
-						self.messageText.delete(1.0, tki.END)
-						self.messageText.pack_forget()
-					self.catDetected = 0
-					self.peopleCount = 0
-					print('STATE: 3 -> 0')
-					self.state = 0
-				elif self.state == 4:
-					# check for voice
-					print('STATE: 4 -> 0')
-					self.state = 0
+					self.messageText['state'] = tki.NORMAL
+					self.messageText.delete(1.0, tki.END)
+					self.messageText.pack_forget()
+
+					time.sleep(6)
+
 				elif self.state == 5:
 					self.textPanel['text'] = ''
-					self.idle = self.idleduration*3
+					self.idle = self.idleduration*2
 					self.textPanel.pack_forget()
 					sns.send_push(body= 'There is someone at your door.', device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
 					sns.send_push(body= 'There is someone at your door.', device_id = '119c70f2e039960b82a9a6b74eb6db172420e0e3445c579675400abd19c08545')
@@ -281,7 +336,7 @@ class View:
 					self.state = 6
 				elif self.state == 6:
 					if self.textPanel['text'] == '':
-						self.textPanel['text'] = 'Waiting\nfor\nResponse'
+						self.textPanel['text'] = 'Waiting\nfor response\n from\n a resident.'
 						self.textPanel['font'] = self.subHeaderFont
 						self.textPanel['fg'] = '#000000'
 						self.textPanel.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
@@ -441,9 +496,9 @@ class View:
 
 		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/6, (self.frame.shape[1],self.frame.shape[0]))
 
-	def evalPredictions(self, picthreshold=85, voicethreshold=25):
+	def evalPredictions(self, picthreshold=75, voicethreshold=75):
 		picMul = 0.5
-		voiceMul = 0.68
+		voiceMul = 0.5
 		scoresPic = {}
 		scoresVoice = {}
 
@@ -478,8 +533,8 @@ class View:
 			maxIndex = scoresPic.values().index(max(scoresPic.values()))
 			maxID = scoresPic.keys()[maxIndex]
 		elif len(scoresVoice) > 0:
-			maxIndex = scoresPic.values().index(max(scoresPic.values()))
-			maxID = scoresPic.keys()[maxIndex]
+			maxIndex = scoresVoice.values().index(max(scoresVoice.values()))
+			maxID = scoresVoice.keys()[maxIndex]
                 
 		person = maxID
 		if (person in scoresPic.keys()) and  (scoresPic[person] >= picMul):

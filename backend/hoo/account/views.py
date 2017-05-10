@@ -106,6 +106,12 @@ class resident_list(ListAPIView):
 
 	def get_queryset(self):
 		return Resident.objects.all().order_by("name")
+
+class microsoft_list(ListAPIView):
+	serializer_class = ResidentSerializer
+
+	def get_queryset(self):
+		return Resident.objects.all().exclude(microsoft_id='').order_by("id")
 		
 
 class update_visit(APIView):

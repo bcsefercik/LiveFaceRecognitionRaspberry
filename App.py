@@ -29,4 +29,6 @@ vs = VideoStream(usePiCamera=opt["picamera"] > 0).start()
 time.sleep(2.0)
 view = View(vs, recognizer, network, width=opt["width"], height=opt["height"], framerate=opt["framerate"])
 
+
+print("INFO: Application started successfully.")
 view.root.mainloop()
