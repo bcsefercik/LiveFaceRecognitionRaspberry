@@ -6,7 +6,7 @@ FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 16000
 CHUNK = 1024
-RECORD_SECONDS = 30
+RECORD_SECONDS = 6
 
 
 def record_sound(username):
@@ -30,7 +30,7 @@ def record_sound(username):
     stream.close()
     audio.terminate()
 
-    filename = username + ' ' + str(datetime.datetime.now())
+    filename = 'sound_recog.wav'
 
     waveFile = wave.open(filename, 'wb')
     waveFile.setnchannels(CHANNELS)

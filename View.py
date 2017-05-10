@@ -19,6 +19,8 @@ class View:
 		self.network = network
 		self.state = 0
 
+		self.voiceRecog = False
+
 		self.session = boto3.session.Session(region_name='eu-central-1')
 		self.s3 = boto3.resource('s3')
 		self.videoS3Name = ''
@@ -45,7 +47,7 @@ class View:
 		self.idleduration = 5*framerate
 		self.idle = 0
 
-		self.headerFont = tkFont.Font(family='Helvetica', size=120, weight='bold')
+		self.headerFont = tkFont.Font(family='Helvetica', size=130, weight='bold')
 		self.subHeaderFont = tkFont.Font(family='Helvetica', size=20, weight='bold')
 		self.subSHeaderFont = tkFont.Font(family='Helvetica', size=18, weight='bold')
 		self.textFont = tkFont.Font(family='Helvetica', size=13, weight='normal')
@@ -85,7 +87,6 @@ class View:
 		self.testSentences = ['Be the change you wish to see in the world.', 'Don\'t count the days, make the days count!', 'It is not who I am underneath, but what I do that defines me.',
 								'Only I can change my life. No one can do it for me.', 'The best preparation for tomorrow is doing your best today.']
 
-		self.voiceRecog = False
 	def videoLoop(self):
 		try:
 			while (not self.stopVideoLoop.is_set()):
@@ -316,6 +317,7 @@ class View:
 
 
 					ms_list = self.network.microsoft_list()
+					print(ms_list)
 
 					success = True
 

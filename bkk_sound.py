@@ -1,12 +1,9 @@
 import cognitive_sr.sound_recorder
 import io
-#import speech_recognition as sr
 
-
-subscription_key = 'deb02ae701ff4d6fb34cbc85fcc4b935'
+subscription_key = '497d4917f97345fd9b6eb8368bfcf784'
 profile_id = '2d53504b-ff89-44c6-860c-d65493f999e8'
-BING_KEY = "cf23b72dd9204d768a2014d3e106f5f4"
-
+BING_KEY = "d51898fb7acd49faa9bed7669702d240"
 
 
 def create_profile():
@@ -20,7 +17,7 @@ def delete_profile(profile_id):
     """ deletes a user profile """
     speech_identification = cognitive_sr.SpeechIdentification(subscription_key)
     result = speech_identification.delete_profile(profile_id)
-    #print('Deleted:', result)
+    print('Deleted:', result)
 
 
 def enroll_profile(profile_id):
@@ -33,7 +30,7 @@ def enroll_profile(profile_id):
 
     speech_identification = cognitive_sr.SpeechIdentification(subscription_key)
     result = speech_identification.enroll_profile(profile_id, wav_data)
-    #print(result)
+    print(result)
 
 
 def identify_profile(profile_ids):
@@ -45,8 +42,8 @@ def identify_profile(profile_ids):
 
     speech_identification = cognitive_sr.SpeechIdentification(subscription_key)
     result = speech_identification.identify_profile(
-        profile_ids, wav_data, short_audio=True)
-    #print(result)
+        profile_ids.split(','), wav_data, short_audio=True)
+    return result
 
 
 def list_profiles():
@@ -55,24 +52,13 @@ def list_profiles():
     profiles = speech_identification.get_all_profiles()
 
     for profile in profiles:
-        print(profile['identificationProfileId'])
+        print(profile)
 
 
-# def speech2text():
-#     r = sr.Recognizer()
-#     with sr.Microphone() as source:
-#         print("Say something!")
-#         audio = r.listen(source)
+def speech2text(BING_KEY):
+   cognitive_sr.recognition.recognize(BING_KEY)
 
-#     try:
-#         print("Microsoft Bing Voice Recognition thinks you said " + r.recognize_bing(audio, key=BING_KEY))
-#     except sr.UnknownValueError:
-#         print("Microsoft Bing Voice Recognition could not understand audio")
-#     except sr.RequestError as e:
-#         print("Could not request results from Microsoft Bing Voice Recognition service; {0}".format(e))
+#speech2text(BING_KEY)
+#identify_profile('cde2eb34-02f7-4be9-9433-eb65a8317a1c,53da1d9d-3ebe-44ef-8d05-5e7d258cd7d3')
 
-
-def initialize():
-    ref = create_profile()
-
-#identify_profile('f3f73008-b45d-46f0-949d-14ea93d0e077,ce1a3f07-decb-46af-aea3-aacff82fb0af')
+list_profiles()
