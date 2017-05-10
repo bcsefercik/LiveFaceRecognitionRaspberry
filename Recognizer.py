@@ -38,6 +38,7 @@ class Recognizer:
 								print "Unexpected error"
 					c += 1
 			#print(self.people)
+			self.people[-1] = 'unknown'
 			return images, np.array(labels)
 
 	def detect_faces(self, img):

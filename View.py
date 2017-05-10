@@ -15,7 +15,7 @@ import random
 import bkk_sound as sound
 
 class View:
-	def __init__(self, vs, recognizer, network, width=320, height=450, framerate=32, videoduration=3):
+	def __init__(self, vs, recognizer, network, width=320, height=450, framerate=32, videoduration=2):
 		self.network = network
 		self.state = 0
 
@@ -54,7 +54,7 @@ class View:
 		self.buttonPacked = False
 
 		self.textPanel = tki.Label(self.container, text="Hello, world", font=self.textFont)
-		self.messageText = tki.Text(self.container, font=self.textFont)
+		self.messageText = tki.Text(self.container, font=self.textFont, wrap=tki.WORD)
 
 		self.stopVideoLoop = threading.Event()
 		self.thread = threading.Thread(target=self.videoLoop, args=())
@@ -256,6 +256,7 @@ class View:
 						if message != None:
 							self.network.update_message(message_id)
 							self.messageText['bd'] = 0
+
 							self.messageText.insert(tki.END, "There is a message for you:\n\n" + message)
 							self.messageText['state'] = tki.DISABLED
 							self.messageText.tag_configure("center", justify='center')
@@ -300,7 +301,7 @@ class View:
 					self.state = 41
 				elif self.state == 41:
 					if self.textPanel['text'] == '':
-						self.textPanel['text'] = 'Please read\n the following sentence\n out loud.'
+						self.textPanel['text'] = 'Please read\n the following\nsentence\n out loud.'
 						self.textPanel.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
 						self.messageText.insert(tki.END, self.testSentences[random.randint(0, len(self.testSentences))-1])
 						self.messageText['font'] = self.subSHeaderFont
@@ -311,17 +312,45 @@ class View:
 
 					ms_list = self.network.microsoft_list()
 
-					print(sound.identify_profile(ms_list))
+					#print(sound.identify_profile(ms_list))
+					success = False
 
 					time.sleep(6)
 					
-					self.textPanel['text'] = ''
-					self.textPanel.pack_forget()
 					self.messageText['state'] = tki.NORMAL
 					self.messageText.delete(1.0, tki.END)
 					self.messageText.pack_forget()
 
-					time.sleep(6)
+					if success:
+						print('STATE: 41 -> 43')
+						self.state = 43
+					else:
+						print('STATE: 41 -> 44')
+						self.state = 44
+
+					self.textPanel['text'] = ''
+					self.textPanel.pack_forget()
+
+				elif self.state == 43:
+					print('asdf')
+				elif self.state == 44:
+					if self.textPanel['text'] == '':
+						self.textPanel['text'] = 'We can\'t\n recognize\nyour voice.'
+						self.textPanel.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
+						print('INFO: Person is not authorized via Voice Recognition.')
+						time.sleep(3)
+
+					residentName = self.network.get_resident_name(self.recognizedPerson)
+					msg = residentName + ' couldn\'t pass voice recognition control. Waiting for your response.'
+					print('INFO: Notification sent.')
+					sns.send_push(body= msg, device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
+					sns.send_push(body= msg, device_id = '119c70f2e039960b82a9a6b74eb6db172420e0e3445c579675400abd19c08545')
+
+					self.textPanel['text'] = ''
+					self.textPanel.pack_forget()
+
+					print('STATE: 44 -> 6')
+					self.state = 6
 
 				elif self.state == 5:
 					self.textPanel['text'] = ''
@@ -350,7 +379,7 @@ class View:
 						self.messageText['state'] = tki.DISABLED
 						self.messageText.tag_configure("center", justify='center')
 						self.messageText.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
-						time.sleep(13)
+						time.sleep(6)
 						self.messageText['state'] = tki.NORMAL
 						self.messageText.delete(1.0, tki.END)
 						self.messageText.pack_forget()
@@ -384,7 +413,7 @@ class View:
 						print('STATE: 6 -> 0')
 						self.state = 0
 					else:
-						time.sleep(self.sleepduration*13)
+						time.sleep(self.sleepduration*5)
 
 				elif self.state == 10:
 					#access granted check w/wo message
@@ -552,7 +581,7 @@ class View:
 				state = 5
 		
 		if person == -1:
-			return state, None
+			return state, 'unknown'
 		
 		return state, self.recognizer.people[person]
 
