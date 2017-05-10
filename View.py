@@ -45,8 +45,8 @@ class View:
 		self.idleduration = 5*framerate
 		self.idle = 0
 
-		self.headerFont = tkFont.Font(family='Helvetica', size=124, weight='bold')
-		self.subHeaderFont = tkFont.Font(family='Helvetica', size=22, weight='bold')
+		self.headerFont = tkFont.Font(family='Helvetica', size=120, weight='bold')
+		self.subHeaderFont = tkFont.Font(family='Helvetica', size=20, weight='bold')
 		self.subSHeaderFont = tkFont.Font(family='Helvetica', size=18, weight='bold')
 		self.textFont = tkFont.Font(family='Helvetica', size=13, weight='normal')
 
@@ -66,7 +66,7 @@ class View:
 		self.recognizer = recognizer
 
 		self.videoText = None
-		self.videoDuration = videoduration*self.framerate/2
+		self.videoDuration = videoduration*self.framerate/3
 		self.videoRecord = 0
 		self.videoCodec = cv2.cv.CV_FOURCC(*'MJPG')
 		self.video = None
@@ -82,7 +82,7 @@ class View:
 
 		self.faceAuth = False
 
-		self.testSentences = ['Be the change you wish to see in the world.', 'Don\'t count the days, make the days count!', 'It is not who I am underneath, but what I do that defines me.'
+		self.testSentences = ['Be the change you wish to see in the world.', 'Don\'t count the days, make the days count!', 'It is not who I am underneath, but what I do that defines me.',
 								'Only I can change my life. No one can do it for me.', 'The best preparation for tomorrow is doing your best today.']
 
 		self.voiceRecog = False
@@ -103,7 +103,7 @@ class View:
 					catCount, cats = self.recognizer.detect_cats(image)
 
 					if catCount > 0:
-						self.videoRecord = int(self.videoDuration*0.75)
+						self.videoRecord = self.videoDuration
 						self.catDetected = catCount
 						print('INFO: Cat detected.')
 						print('STATE: 0 -> 13')
@@ -172,7 +172,7 @@ class View:
 							print('STATE: 1 -> 0')
 
 
-					if self.videoRecord != 0 and self.videoRecord%5 == 0 and self.peopleCount > 0:
+					if self.videoRecord != 0 and self.videoRecord%4 == 0 and self.peopleCount > 0:
 						self.predictions.append(self.recognizer.recognize(self.frame))
 						print('INFO: Calling recognize()')
 
@@ -317,29 +317,60 @@ class View:
 
 					ms_list = self.network.microsoft_list()
 
-					if self.voiceRecog:
-						print(sound.identify_profile(ms_list))
-
-						
 					success = True
 
-					time.sleep(6)
+					if self.voiceRecog:
+						print(sound.identify_profile(ms_list))
+					else:
+						time.sleep(8)
 					
 					self.messageText['state'] = tki.NORMAL
 					self.messageText.delete(1.0, tki.END)
 					self.messageText.pack_forget()
 
-					if success:
-						print('STATE: 41 -> 43')
-						self.state = 43
+					status = self.network.visit_status(self.visitID)
+
+					if status == 0:
+						if success:
+							print('STATE: 41 -> 43')
+							self.state = 43
+						else:
+							print('STATE: 41 -> 44')
+							self.state = 44
 					else:
-						print('STATE: 41 -> 44')
-						self.state = 44
+						if status == 1:
+							self.textPanel['text'] = 'Access Granted'
+							self.textPanel['font'] = self.subHeaderFont
+							self.textPanel['fg'] = '#26C281'
+						elif status == -1:
+							self.textPanel['text'] = 'Access Rejected'
+							self.textPanel['font'] = self.subHeaderFont
+							self.textPanel['fg'] = '#D91E18'
+
+						message_id, message = self.network.get_message(self.recognizedPerson)
+
+						if message != None:
+							self.network.update_message(message_id)
+							self.messageText['bd'] = 0
+							self.messageText.insert(tki.END, "There is a message for you:\n\n" + message)
+							self.messageText['state'] = tki.DISABLED
+							self.messageText.tag_configure("center", justify='center')
+							self.messageText.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
+							time.sleep(6)
+							self.messageText['state'] = tki.NORMAL
+							self.messageText.delete(1.0, tki.END)
+							self.messageText.pack_forget()
+						else:
+							time.sleep(3)
+						print('STATE: 41 -> 0')
+						self.state = 0
 
 					self.textPanel['text'] = ''
 					self.textPanel.pack_forget()
 
 				elif self.state == 43:
+					if self.network.update_visit(self.visitID, 1):
+						print('INFO: Visit updated.')
 					print('INFO: Notification sent.')
 					sns.send_push(body= residentName + ' has granted access via voice recognition system.', device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
 					sns.send_push(body= residentName + ' has granted access via voice recognition system.', device_id = '119c70f2e039960b82a9a6b74eb6db172420e0e3445c579675400abd19c08545')
@@ -366,7 +397,7 @@ class View:
 
 				elif self.state == 5:
 					self.textPanel['text'] = ''
-					self.idle = self.idleduration
+					self.idle = self.idleduration/3
 					self.textPanel.pack_forget()
 					sns.send_push(body= 'There is someone at your door.', device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
 					sns.send_push(body= 'There is someone at your door.', device_id = '119c70f2e039960b82a9a6b74eb6db172420e0e3445c579675400abd19c08545')
@@ -411,6 +442,8 @@ class View:
 						print('INFO: Reminding notification sent.')
 
 					if self.idle <= 0:
+						if self.network.update_visit(self.visitID, -1):
+							print('INFO: Visit updated.')
 						self.textPanel['text'] = 'No Response'
 						time.sleep(5)
 						self.textPanel['text'] = ''
@@ -525,7 +558,7 @@ class View:
 
 	def ring(self):
 		self.state = 1
-		self.idle = self.idleduration
+		self.idle = self.idleduration*3/2
 		self.button.pack_forget()
 		self.buttonPacked = False
 		self.initVideo()
@@ -546,7 +579,7 @@ class View:
 		except OSError:
 			pass
 
-		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/6, (self.frame.shape[1],self.frame.shape[0]))
+		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/5, (self.frame.shape[1],self.frame.shape[0]))
 
 	def evalPredictions(self, picthreshold=80, voicethreshold=90):
 		picMul = 0.5

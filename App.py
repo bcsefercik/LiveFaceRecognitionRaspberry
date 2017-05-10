@@ -18,7 +18,8 @@ ap.add_argument("-fr", "--framerate", type=int, default=25,
 opt = vars(ap.parse_args())
 
 
-recognizer = Recognizer()
+#recognizer = Recognizer()
+recognizer = Recognizer(modelFile='model.mdl')
 network = Network()
 #network = Network(endpoint='http://localhost:8000/hoo/')
 print('INFO: People: ')

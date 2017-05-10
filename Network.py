@@ -16,6 +16,18 @@ class Network:
 		else:
 			return None
 
+	def update_visit(self, visit_id, status=0):
+		req = requests.post(self.endpoint + 'update_visit/', json={'id': visit_id, 'status': status})
+		if req.status_code == 200:
+			json = req.json()
+
+			if 'result' in json:
+				return True
+			else:
+				return False
+		else:
+			return False
+
 	def visit_status(self, visit_id):
 		req = requests.get(self.endpoint + 'visit_by_id/', params={'id': visit_id})
 		if req.status_code == 200:
