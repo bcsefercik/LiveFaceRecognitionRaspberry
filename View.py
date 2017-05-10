@@ -82,8 +82,10 @@ class View:
 
 		self.faceAuth = False
 
-		self.testSentences = ['Be the change you wish to see in the world.', 'Don\'t count the days, make the days count!', 'It is not who I am underneath, but what I do that defines me.']
+		self.testSentences = ['Be the change you wish to see in the world.', 'Don\'t count the days, make the days count!', 'It is not who I am underneath, but what I do that defines me.'
+								'Only I can change my life. No one can do it for me.', 'The best preparation for tomorrow is doing your best today.']
 
+		self.voiceRecog = False
 	def videoLoop(self):
 		try:
 			while (not self.stopVideoLoop.is_set()):
@@ -315,7 +317,10 @@ class View:
 
 					ms_list = self.network.microsoft_list()
 
-					#print(sound.identify_profile(ms_list))
+					if self.voiceRecog:
+						print(sound.identify_profile(ms_list))
+
+						
 					success = True
 
 					time.sleep(6)
