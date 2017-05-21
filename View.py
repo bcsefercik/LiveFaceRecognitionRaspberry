@@ -7,19 +7,22 @@ import imutils
 import time
 import cv2
 import os
+import io
 import subprocess
 import boto3
 import boto3.session
 import bcssns as sns
 import random
-import bkk_sound as sound
+import cognitive_sr
+import sound_recorder
+import BingSpeechAPI as speech
 
 class View:
 	def __init__(self, vs, recognizer, network, width=320, height=450, framerate=32, videoduration=2):
 		self.network = network
 		self.state = 0
 
-		self.voiceRecog = False
+		self.voiceRecog = True
 
 		self.session = boto3.session.Session(region_name='eu-central-1')
 		self.s3 = boto3.resource('s3')
@@ -86,7 +89,9 @@ class View:
 
 		self.testSentences = ['Be the change you wish to see in the world.', 'Don\'t count the days, make the days count!', 'It is not who I am underneath, but what I do that defines me.',
 								'Only I can change my life. No one can do it for me.', 'The best preparation for tomorrow is doing your best today.']
+		self.selectedTestSentence = 0	
 
+		self.speech = speech.BingSpeechAPI()					
 	def videoLoop(self):
 		try:
 			while (not self.stopVideoLoop.is_set()):
@@ -309,22 +314,35 @@ class View:
 					if self.textPanel['text'] == '':
 						self.textPanel['text'] = 'Please read\n the following\nsentence\n out loud.'
 						self.textPanel.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
-						self.messageText.insert(tki.END, self.testSentences[random.randint(0, len(self.testSentences))-1])
+						self.selectedTestSentence = random.randint(0, len(self.testSentences))-1
+						self.messageText.insert(tki.END, self.testSentences[self.selectedTestSentence])
 						self.messageText['font'] = self.subSHeaderFont
 						self.messageText['state'] = tki.DISABLED
 						self.messageText.tag_configure("center", justify='center')
 						self.messageText.pack(in_=self.container, side="bottom", fill="both", expand="yes", padx=10, pady=10)
 
 
-					ms_list = self.network.microsoft_list()
-					print(ms_list)
-
 					success = True
 
+
 					if self.voiceRecog:
-						print(sound.identify_profile(ms_list))
+
+						ms_list = self.network.microsoft_list()
+						wav_path = sound_recorder.record_sound()
+						sentence = self.speech.recognize(wav_path)
+						print('INFO: Sentence: ' + sentence)
+						match = self.compareSentences(self.testSentences[self.selectedTestSentence], sentence)
+						print(match)
+						if match >= len(self.testSentences[self.selectedTestSentence].split(' '))/2:
+							identification_result = self.identify_voice_profile('497d4917f97345fd9b6eb8368bfcf784', ms_list, wav_path)
+							print('INFO: Voice recognition result: Profile ID:' + identification_result['identifiedProfileId'] + ' Confidence: ' + identification_result['confidence'])
+							db_msID = self.network.get_resident_msID(self.recognizedPerson)
+							if not identification_result['identifiedProfileId'] == db_msID:
+								success = False
+						else:
+							success = False
 					else:
-						time.sleep(8)
+						time.sleep(4)
 					
 					self.messageText['state'] = tki.NORMAL
 					self.messageText.delete(1.0, tki.END)
@@ -399,7 +417,7 @@ class View:
 
 				elif self.state == 5:
 					self.textPanel['text'] = ''
-					self.idle = self.idleduration/3
+					self.idle = self.idleduration/2
 					self.textPanel.pack_forget()
 					sns.send_push(body= 'There is someone at your door.', device_id = 'd8f936c3d186d37f232e5c1d7e139a8f0f86e9ba62ed91f0657997b0464f568e')
 					sns.send_push(body= 'There is someone at your door.', device_id = '119c70f2e039960b82a9a6b74eb6db172420e0e3445c579675400abd19c08545')
@@ -447,12 +465,14 @@ class View:
 						if self.network.update_visit(self.visitID, -1):
 							print('INFO: Visit updated.')
 						self.textPanel['text'] = 'No Response'
+						self.textPanel.pack(in_=self.container, side="top", fill="both", expand="yes", padx=10, pady=10)
 						time.sleep(5)
 						self.textPanel['text'] = ''
 						self.textPanel.pack_forget()
 						print('INFO: No response from owner')
 						print('STATE: 6 -> 0')
 						self.state = 0
+						continue
 
 					status = self.network.visit_status(self.visitID)
 					if status == 1:
@@ -583,7 +603,7 @@ class View:
 
 		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/5, (self.frame.shape[1],self.frame.shape[0]))
 
-	def evalPredictions(self, picthreshold=80, voicethreshold=90):
+	def evalPredictions(self, picthreshold=75, voicethreshold=90):
 		picMul = 0.5
 		voiceMul = 0.5
 		scoresPic = {}
@@ -622,7 +642,7 @@ class View:
 		elif len(scoresVoice) > 0:
 			maxIndex = scoresVoice.values().index(max(scoresVoice.values()))
 			maxID = scoresVoice.keys()[maxIndex]
-                
+				
 		person = maxID
 		if (person in scoresPic.keys()) and  (scoresPic[person] >= picMul):
 			state = 3
@@ -643,3 +663,24 @@ class View:
 		
 		return state, self.recognizer.people[person]
 
+	def identify_voice_profile(self, subscription_key, profile_ids, wav_path):
+		""" identifies a profile using a wav recording of them speaking """
+		with io.open(wav_path, 'rb') as wav_file:
+			wav_data = wav_file.read()
+
+		speech_identification = cognitive_sr.SpeechIdentification(subscription_key)
+		result = speech_identification.identify_profile(
+			profile_ids.split(','), wav_data, short_audio=True)
+		return result
+
+	def compareSentences(self, s1, s2):
+		match = {}
+		s1words = s1.lower().split(' ')
+		s2words = s2.lower().split(' ')
+		for w1 in s1words:
+			for w2 in s2words:
+				if w1 == w2:
+					match[w1] = 1
+					break
+
+		return len(match)

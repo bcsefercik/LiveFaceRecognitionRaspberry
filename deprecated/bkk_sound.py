@@ -58,7 +58,7 @@ def list_profiles():
 def speech2text(BING_KEY):
    cognitive_sr.recognition.recognize(BING_KEY)
 
-#speech2text(BING_KEY)
+speech2text(BING_KEY)
 #identify_profile('cde2eb34-02f7-4be9-9433-eb65a8317a1c,53da1d9d-3ebe-44ef-8d05-5e7d258cd7d3')
 
 list_profiles()

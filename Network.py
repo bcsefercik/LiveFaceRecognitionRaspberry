@@ -67,6 +67,18 @@ class Network:
 		else:
 			return None
 
+	def get_resident_msID(self, username):
+		req = requests.get(self.endpoint + 'register_resident/', params={'username': username})
+		if req.status_code == 200:
+			json = req.json()
+
+			if not 'microsoft_id' in json:
+				return ''
+			else:
+				return json['microsoft_id']
+		else:
+			return None
+
 	def microsoft_list(self):
 		req = requests.get(self.endpoint + 'microsoft_list/')
 		l = ''

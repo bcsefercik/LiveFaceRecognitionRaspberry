@@ -93,9 +93,9 @@ class ApiClient(object):
 
     def post(self, url_path, params=None, data=None):
         """ performs a post request against using the supplied args """
-
         response = self._exec_request(requests.post, url_path,
                                       params=params, data=data)
+
         return response
 
     def put(self, url_path, params=None, data=None):
