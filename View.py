@@ -22,7 +22,7 @@ class View:
 		self.network = network
 		self.state = 0
 
-		self.voiceRecog = True
+		self.voiceRecog = False
 
 		self.session = boto3.session.Session(region_name='eu-central-1')
 		self.s3 = boto3.resource('s3')
@@ -328,7 +328,10 @@ class View:
 					if self.voiceRecog:
 
 						ms_list = self.network.microsoft_list()
-						wav_path = sound_recorder.record_sound()
+						wav_path = 'sound_recog.wav'
+						FNULL = open(os.devnull, 'w')
+						subprocess.call('arecord -D plughw:1,0 -r 16000 -c 1 -d 6 -f S16_LE sound_recog.wav', shell=True, stdout=FNULL, stderr=subprocess.STDOUT)
+						FNULL = None
 						sentence = self.speech.recognize(wav_path)
 						print('INFO: Sentence: ' + sentence)
 						match = self.compareSentences(self.testSentences[self.selectedTestSentence], sentence)
@@ -603,7 +606,7 @@ class View:
 
 		self.video = cv2.VideoWriter('output.avi', self.videoCodec, self.framerate/5, (self.frame.shape[1],self.frame.shape[0]))
 
-	def evalPredictions(self, picthreshold=75, voicethreshold=90):
+	def evalPredictions(self, picthreshold=85, voicethreshold=90):
 		picMul = 0.5
 		voiceMul = 0.5
 		scoresPic = {}
