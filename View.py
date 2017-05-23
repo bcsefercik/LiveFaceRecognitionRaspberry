@@ -22,7 +22,7 @@ class View:
 		self.network = network
 		self.state = 0
 
-		self.voiceRecog = False
+		self.voiceRecog = True
 
 		self.session = boto3.session.Session(region_name='eu-central-1')
 		self.s3 = boto3.resource('s3')
