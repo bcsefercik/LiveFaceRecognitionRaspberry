@@ -47,7 +47,7 @@ class View:
 
 		self.framerate = framerate
 		self.sleepduration = 1.0/self.framerate
-		self.idleduration = 5*framerate
+		self.idleduration = 3*framerate
 		self.idle = 0
 
 		self.headerFont = tkFont.Font(family='Helvetica', size=130, weight='bold')
@@ -331,6 +331,7 @@ class View:
 						wav_path = 'sound_recog.wav'
 						FNULL = open(os.devnull, 'w')
 						subprocess.call('arecord -D plughw:1,0 -r 16000 -c 1 -d 6 -f S16_LE sound_recog.wav', shell=True, stdout=FNULL, stderr=subprocess.STDOUT)
+						#	time.sleep(8)
 						FNULL = None
 						sentence = self.speech.recognize(wav_path)
 						print('INFO: Sentence: ' + sentence)
