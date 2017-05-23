@@ -330,7 +330,7 @@ class View:
 						ms_list = self.network.microsoft_list()
 						wav_path = 'sound_recog.wav'
 						FNULL = open(os.devnull, 'w')
-						subprocess.call('arecord -D plughw:1,0 -r 16000 -c 1 -d 6 -f S16_LE sound_recog.wav', shell=True, stdout=FNULL, stderr=subprocess.STDOUT)
+						subprocess.call('arecord -D plughw:1,0 -r 16000 -c 1 -d 5 -f S16_LE sound_recog.wav', shell=True, stdout=FNULL, stderr=subprocess.STDOUT)
 						#	time.sleep(8)
 						FNULL = None
 						sentence = self.speech.recognize(wav_path)
@@ -349,6 +349,7 @@ class View:
 						time.sleep(4)
 					
 					self.messageText['state'] = tki.NORMAL
+					self.textPanel['text'] = ''
 					self.messageText.delete(1.0, tki.END)
 					self.messageText.pack_forget()
 
