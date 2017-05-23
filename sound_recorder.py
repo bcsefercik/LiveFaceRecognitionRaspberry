@@ -12,6 +12,8 @@ RECORD_SECONDS = 6
 def record_sound():
 
     audio = pyaudio.PyAudio()
+    numdevices = audio.get_device_count()
+    print('asd' + str(numdevices))
 
     # start Recording
     stream = audio.open(format=FORMAT, channels=CHANNELS,
